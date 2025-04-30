@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API测试工具</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    h1 { color: #333; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+    button { background: #4CAF50; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #45a049; }
+    .result { margin-top: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 4px; }
+    pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>API测试工具</h1>
+    <div class="form-group">
+      <label for="endpoint">API端点</label>
+      <select id="endpoint">
+        <option value="">-- 选择API端点 --</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="method">请求方法</label>
+      <select id="method">
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+        <option value="PUT">PUT</option>
+        <option value="DELETE">DELETE</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="path">请求路径</label>
+      <input type="text" id="path" placeholder="例如: users">
+    </div>
+    <div class="form-group">
+      <label for="params">查询参数 (JSON格式)</label>
+      <textarea id="params" rows="3" placeholder='{"page": 1, "pageSize": 10}'></textarea>
+    </div>
+    <div class="form-group">
+      <label for="body">请求体 (JSON格式)</label>
+      <textarea id="body" rows="5" placeholder='{"name": "测试", "email": "test@example.com"}'></textarea>
+    </div>
+    <button id="sendBtn" onclick="handleSend()">发送请求</button>
+    <div class="result" style="display: none;">
+      <h3>响应结果</h3>
+      <pre id="result"></pre>
+    </div>
+    <!-- <script src="/api/tool/swagger/static/js/swagger-test.js"></script> -->
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    // 获取API端点列表
+    try {
+      const response = await fetch('/api/v1/tool/swagger/endpoints');
+      const responseData = await response.json();
+
+      // 处理统一响应格式
+      let endpoints = [];
+      if (responseData.code === 200) {
+        // 检查返回的数据是否存在error字段
+        if (responseData.data && responseData.data.error) {
+          console.error('获取API端点失败:', responseData.data.error);
+          document.getElementById('endpoint').innerHTML = '<option value="">获取端点失败，请稍后再试</option>';
+          return;
+        }
+
+        // 如果数据是数组，则使用它
+        if (Array.isArray(responseData.data)) {
+          endpoints = responseData.data;
+        } else {
+          console.error('API端点数据格式不正确:', responseData);
+          return;
+        }
+      } else {
+        console.error('获取API端点失败:', responseData);
+        return;
+      }
+
+      const endpointSelect = document.getElementById('endpoint');
+
+      if (endpoints.length === 0) {
+        endpointSelect.innerHTML = '<option value="">没有可用的API端点</option>';
+        return;
+      }
+
+      endpoints.forEach(endpoint => {
+        const option = document.createElement('option');
+        option.value = JSON.stringify(endpoint);
+        option.textContent = `${endpoint.method} ${endpoint.path} - ${endpoint.summary || ''}`;
+        endpointSelect.appendChild(option);
+      });
+    } catch (error) {
+      console.error('获取API端点失败', error);
+      document.getElementById('endpoint').innerHTML = '<option value="">获取端点异常，请检查网络</option>';
+    }
+
+    // 端点选择变更事件
+    document.getElementById('endpoint').addEventListener('change', function() {
+      if (!this.value) return;
+
+      try {
+        const endpoint = JSON.parse(this.value);
+        document.getElementById('method').value = endpoint.method;
+        document.getElementById('path').value = endpoint.path.replace(/^\//, '');
+
+        // 如果有默认参数，填充默认值
+        if (endpoint.parameters) {
+          const params = {};
+          const bodyParams = {};
+
+          endpoint.parameters.forEach(param => {
+            if (param.in === 'query') {
+              params[param.name] = param.example || '';
+            } else if (param.in === 'body' && param.schema) {
+              // 尝试解析schema示例
+              if (param.schema.example) {
+                Object.assign(bodyParams, param.schema.example);
+              }
+            }
+          });
+
+          if (Object.keys(params).length > 0) {
+            document.getElementById('params').value = JSON.stringify(params, null, 2);
+          }
+
+          if (Object.keys(bodyParams).length > 0) {
+            document.getElementById('body').value = JSON.stringify(bodyParams, null, 2);
+          }
+        }
+      } catch (e) {
+        console.error('解析端点数据失败', e);
+      }
+    });
+
+    // 尝试立即获取和打印按钮元素以确认它存在
+  const sendButton = document.getElementById('sendBtn');
+  console.log('发送按钮元素:', sendButton);
+
+    // 发送请求
+    document.getElementById('sendBtn').addEventListener('click', async () => {
+      console.log('111');
+
+      const method = document.getElementById('method').value;
+      const path = document.getElementById('path').value;
+      let params = {};
+      let body = {};
+
+      try {
+        const paramsText = document.getElementById('params').value;
+        if (paramsText.trim()) {
+          params = JSON.parse(paramsText);
+        }
+      } catch (e) {
+        alert('查询参数JSON格式错误');
+        return;
+      }
+
+      try {
+        const bodyText = document.getElementById('body').value;
+        if (bodyText.trim()) {
+          body = JSON.parse(bodyText);
+        }
+      } catch (e) {
+        alert('请求体JSON格式错误');
+        return;
+      }
+
+      // 构建查询字符串
+      const queryParams = new URLSearchParams();
+      for (const key in params) {
+        queryParams.append(key, params[key]);
+      }
+      queryParams.append('_method', method);
+
+      try {
+        const response = await fetch(`/api/v1/${path}?${queryParams.toString()}`, {
+          method: method === 'GET' ? 'GET' : 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: method === 'GET' ? undefined : JSON.stringify(body)
+        });
+
+        const result = await response.json();
+        document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+        document.querySelector('.result').style.display = 'block';
+      } catch (error) {
+        document.getElementById('result').textContent = JSON.stringify({
+          error: '请求失败',
+          message: error.message
+        }, null, 2);
+        document.querySelector('.result').style.display = 'block';
+      }
+    });
+     // 添加额外的事件监听器，以防之前的方式有问题
+  if (sendButton) {
+    sendButton.addEventListener('click', function() {
+      console.log('通过第二种方式点击了按钮');
+    });
+  }
+  });
+
+  async function handleSend() {
+    console.log(444);
+    const method = document.getElementById('method').value;
+      const path = document.getElementById('path').value;
+      let params = {};
+      let body = {};
+
+      try {
+        const paramsText = document.getElementById('params').value;
+        if (paramsText.trim()) {
+          params = JSON.parse(paramsText);
+        }
+      } catch (e) {
+        alert('查询参数JSON格式错误');
+        return;
+      }
+
+      try {
+        const bodyText = document.getElementById('body').value;
+        if (bodyText.trim()) {
+          body = JSON.parse(bodyText);
+        }
+      } catch (e) {
+        alert('请求体JSON格式错误');
+        return;
+      }
+
+      // 构建查询字符串
+      const queryParams = new URLSearchParams();
+      for (const key in params) {
+        queryParams.append(key, params[key]);
+      }
+      queryParams.append('_method', method);
+       const apiPath = path.startsWith('v1/') ? path : `v1/${path}`;
+      try {
+        const response = await fetch(`/api/v1/tool/swagger/test/${apiPath}?${queryParams.toString()}`, {
+          method: method === 'GET' ? 'GET' : 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: method === 'GET' ? undefined : JSON.stringify(body)
+        });
+
+        const result = await response.json();
+        document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+        document.querySelector('.result').style.display = 'block';
+      } catch (error) {
+        document.getElementById('result').textContent = JSON.stringify({
+          error: '请求失败',
+          message: error.message
+        }, null, 2);
+        document.querySelector('.result').style.display = 'block';
+      }
+  }
+</script>
+</body>
+</html>

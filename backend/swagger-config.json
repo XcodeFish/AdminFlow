@@ -1,0 +1,6 @@
+{
+  "title": "NestJS Admin API",
+  "description": "NestJS Admin System API文档",
+  "version": "1.0",
+  "basePath": "/api"
+}
