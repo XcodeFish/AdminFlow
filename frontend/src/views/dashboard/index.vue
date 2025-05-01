@@ -3,12 +3,16 @@
     <!-- 欢迎信息区域 -->
     <div class="dashboard__welcome">
       <div class="welcome-card">
-        <h1 class="welcome-title">欢迎使用 Admin Flow 系统</h1>
-        <p class="welcome-subtitle">早上好，{{ userInfo.nickname || userInfo.username }}，祝您开心每一天！</p>
-        <div class="welcome-time">
-          <time-display />
-          <div class="welcome-weather">
-            {{ weather.temperature }}°C / {{ weather.condition }}
+        <div class="welcome-content">
+          <div class="welcome-info">
+            <h1 class="welcome-title">欢迎使用 Admin Flow 系统</h1>
+            <p class="welcome-subtitle">早上好，{{ userInfo.nickname || userInfo.username }}，祝您开心每一天！</p>
+          </div>
+          <div class="welcome-time-weather">
+            <time-display />
+            <div class="welcome-weather">
+              {{ weather.temperature }}°C / {{ weather.condition }}
+            </div>
           </div>
         </div>
       </div>
@@ -73,6 +77,7 @@ import StatCard from '@/components/business/dashboard/StatCard.vue'
 import TrendChart from '@/components/business/dashboard/TrendChart.vue'
 import PieChart from '@/components/business/dashboard/PieChart.vue'
 import TodoList from '@/components/business/dashboard/TodoList.vue'
+import TimeDisplay from '@/components/business/common/TimeDisplay.vue'
 
 // 用户信息
 const userStore = useUserStore()
@@ -160,21 +165,6 @@ const fetchTodoList = async () => {
   }
 }
 
-// 时间显示组件
-const TimeDisplay = defineComponent({
-  setup() {
-    const time = ref(new Date().toLocaleTimeString())
-
-    onMounted(() => {
-      setInterval(() => {
-        time.value = new Date().toLocaleTimeString()
-      }, 1000)
-    })
-
-    return () => h('div', { class: 'time-display' }, time.value)
-  }
-})
-
 // 页面初始化
 onMounted(async () => {
   await fetchStats()
@@ -198,6 +188,24 @@ onMounted(async () => {
       border-radius: 0.5rem;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       padding: 1.5rem;
+
+      .welcome-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      .welcome-info {
+        flex: 1;
+      }
+
+      .welcome-time-weather {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.5rem;
+      }
     }
 
     .welcome-title {
@@ -209,26 +217,14 @@ onMounted(async () => {
 
     .welcome-subtitle {
       color: #666;
-      margin-bottom: 1rem;
+      margin-bottom: 0;
     }
 
-    .welcome-time {
+    .welcome-weather {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      font-size: 1.25rem;
+      font-size: 1rem;
       color: #444;
-
-      .time-display {
-        font-size: 1.5rem;
-        font-weight: 500;
-      }
-
-      .welcome-weather {
-        display: flex;
-        align-items: center;
-        font-size: 1rem;
-      }
     }
   }
 

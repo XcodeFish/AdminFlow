@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElBreadcrumb: typeof import('element-plus/es')['ElBreadcrumb']
     ElBreadcrumbItem: typeof import('element-plus/es')['ElBreadcrumbItem']
@@ -39,10 +40,13 @@ declare module 'vue' {
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElTag: typeof import('element-plus/es')['ElTag']
     ElTooltip: typeof import('element-plus/es')['ElTooltip']
+    ErrorBoundary: typeof import('./components/common/ErrorBoundary.vue')['default']
+    ErrorHandlingExample: typeof import('./components/examples/ErrorHandlingExample.vue')['default']
     PieChart: typeof import('./components/business/dashboard/PieChart.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     StatCard: typeof import('./components/business/dashboard/StatCard.vue')['default']
+    TimeDisplay: typeof import('./components/business/common/TimeDisplay.vue')['default']
     TodoList: typeof import('./components/business/dashboard/TodoList.vue')['default']
     TrendChart: typeof import('./components/business/dashboard/TrendChart.vue')['default']
   }

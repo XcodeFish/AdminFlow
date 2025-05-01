@@ -1,52 +1,15 @@
 <template>
-  <div class="app-wrapper">
-    <div class="sidebar-container">
-      <!-- 侧边栏 -->
-      <div class="logo-container">
-        <router-link to="/">
-          <h1 class="logo-title">Admin Flow</h1>
-        </router-link>
-      </div>
-
-      <!-- 导航菜单 -->
-      <el-menu :default-active="activeMenu" class="el-menu-vertical" background-color="#1e293b" text-color="#fff"
-        active-text-color="#409EFF">
-        <el-menu-item index="/dashboard" @click="navigateTo('/dashboard')">
-          <el-icon>
-            <Monitor />
-          </el-icon>
-          <span>仪表盘</span>
-        </el-menu-item>
-
-        <el-sub-menu index="system">
-          <template #title>
-            <el-icon>
-              <Setting />
-            </el-icon>
-            <span>系统管理</span>
-          </template>
-          <el-menu-item index="/system/user" @click="navigateTo('/system/user')">
-            <el-icon>
-              <User />
-            </el-icon>
-            <span>用户管理</span>
-          </el-menu-item>
-          <el-menu-item index="/system/role" @click="navigateTo('/system/role')">
-            <el-icon>
-              <UserFilled />
-            </el-icon>
-            <span>角色管理</span>
-          </el-menu-item>
-        </el-sub-menu>
-      </el-menu>
-    </div>
+  <div class="app-wrapper" :class="{ 'sidebar-collapsed': isCollapse }">
+    <!-- 使用封装的侧边栏组件 -->
+    <sidebar :is-collapse="isCollapse" />
 
     <div class="main-container">
       <div class="header">
         <!-- 头部 -->
         <div class="header-left">
-          <el-icon class="toggle-sidebar">
-            <Fold />
+          <el-icon class="toggle-sidebar" @click="toggleSidebar">
+            <Fold v-if="!isCollapse" />
+            <Expand v-else />
           </el-icon>
           <el-breadcrumb separator="/">
             <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
@@ -84,23 +47,35 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
-  Monitor,
-  Setting,
-  User,
-  UserFilled,
   Fold,
+  Expand,
   ArrowDown
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/modules/user'
+import Sidebar from './components/Sidebar.vue'
+import { globalErrorHandler } from '@/composables/useErrorHandler'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 
-// 激活的菜单项
-const activeMenu = computed(() => {
-  return route.path
-})
+// 侧边栏收起状态
+const isCollapse = ref(false)
+
+// 切换侧边栏
+const toggleSidebar = () => {
+  isCollapse.value = !isCollapse.value
+
+  // 保存侧边栏状态到本地存储，以便刷新页面后保持状态
+  try {
+    localStorage.setItem('sidebarStatus', isCollapse.value ? '1' : '0')
+  } catch (error) {
+    globalErrorHandler.handleError(error, 'warning', {
+      showMessage: false,
+      log: true
+    })
+  }
+}
 
 // 当前路由名称
 const currentRoute = computed(() => {
@@ -112,56 +87,44 @@ const username = computed(() => {
   return userStore.userInfo?.nickname || userStore.userInfo?.username || '用户'
 })
 
-// 导航方法
-const navigateTo = (path: string) => {
-  router.push(path)
-}
-
 // 退出登录
 const handleLogout = async () => {
   try {
     await userStore.logoutAction()
     router.push('/login')
   } catch (error) {
-    console.error('退出登录失败:', error)
+    globalErrorHandler.handleError(error, 'error', {
+      showMessage: true
+    })
   }
 }
+
+// 初始化侧边栏状态（从本地存储读取）
+(() => {
+  try {
+    const sidebarStatus = localStorage.getItem('sidebarStatus')
+    if (sidebarStatus) {
+      isCollapse.value = sidebarStatus === '1'
+    }
+  } catch (error) {
+    console.error('读取侧边栏状态失败:', error)
+  }
+})()
 </script>
 
 <style lang="scss" scoped>
 .app-wrapper {
   display: flex;
   height: 100vh;
+  transition: all 0.3s ease;
 
-  .sidebar-container {
-    width: 16rem;
-    background-color: #1e293b;
-    color: white;
-    overflow-y: auto;
-
-    .logo-container {
-      height: 4rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      .logo-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: white;
-      }
-    }
-
-    .el-menu-vertical {
-      border-right: none;
-    }
-  }
-
+  // 主容器占用剩余空间
   .main-container {
     display: flex;
     flex-direction: column;
     flex: 1;
     overflow: hidden;
+    transition: margin-left 0.3s ease;
 
     .header {
       height: 4rem;
@@ -181,10 +144,18 @@ const handleLogout = async () => {
           margin-right: 1rem;
           font-size: 1.25rem;
           cursor: pointer;
+          transition: transform 0.3s;
+
+          &:hover {
+            color: #409EFF;
+          }
         }
       }
 
       .header-right {
+        display: flex;
+        align-items: center;
+
         .avatar-container {
           display: flex;
           align-items: center;
@@ -203,6 +174,26 @@ const handleLogout = async () => {
       padding: 1rem;
       overflow: auto;
       background-color: #f9fafb;
+    }
+  }
+}
+
+// 侧边栏过渡效果
+@media (min-width: 768px) {
+  .sidebar-collapsed {
+    .main-container {
+      margin-left: 0;
+    }
+  }
+}
+
+// 移动端适配
+@media (max-width: 767px) {
+  .app-wrapper {
+    position: relative;
+
+    .main-container {
+      margin-left: 0;
     }
   }
 }
