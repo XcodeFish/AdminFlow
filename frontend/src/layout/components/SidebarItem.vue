@@ -38,14 +38,14 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, RouteRecordRaw } from 'vue-router'
 import { isExternal } from '@/utils/validate'
 import path from 'path-browserify'
 import { globalErrorHandler } from '@/composables/useErrorHandler'
 
 interface RouteItem {
   path: string
-  name?: string
+  name?: string | symbol
   meta?: {
     title?: string
     icon?: string
@@ -54,6 +54,7 @@ interface RouteItem {
     [key: string]: any
   }
   children?: RouteItem[]
+  component?: any
   [key: string]: any
 }
 

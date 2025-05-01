@@ -36,20 +36,19 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { usePermissionStore } from '@/store/modules/permission'
 import SidebarItem from './SidebarItem.vue'
 import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
 import { globalErrorHandler } from '@/composables/useErrorHandler'
 
-const props = defineProps({
-  isCollapse: {
-    type: Boolean,
-    default: false
-  }
-})
+// 定义属性
+interface Props {
+  isCollapse: boolean
+}
 
-// 路由实例
+const props = defineProps<Props>()
+const router = useRouter()
 const route = useRoute()
 const permissionStore = usePermissionStore()
 
@@ -82,15 +81,29 @@ const activeMenu = computed(() => {
 // 可访问的路由
 const routes = computed(() => {
   try {
-    return permissionStore.routes.filter(route => {
-      // 过滤掉隐藏路由和特殊页面路由
-      return !route.meta?.hidden &&
-        !['/login', '/403', '/404', '/500'].includes(route.path)
+    // 获取所有路由
+    const routes = router.getRoutes().filter(route => {
+      // 只显示不隐藏的路由
+      return !route.meta?.hidden && route.children && route.children.length > 0
+    })
+
+    return routes.map(route => {
+      // 转换为SidebarItem组件需要的格式
+      return {
+        path: route.path,
+        name: route.name,
+        meta: route.meta,
+        children: route.children.map(child => ({
+          path: child.path,
+          name: child.name,
+          meta: child.meta,
+          children: child.children
+        }))
+      }
     })
   } catch (error) {
-    // 处理路由过滤错误
-    globalErrorHandler.handleError(error, 'error', {
-      showMessage: true,
+    globalErrorHandler.handleError(error, 'warning', {
+      showMessage: false,
       log: true
     })
     return []
