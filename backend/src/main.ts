@@ -32,8 +32,9 @@ async function bootstrap() {
 
   // 启用CORS
   app.enableCors({
-    origin: configService.get('app.corsOrigins', '*'),
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    // origin: configService.get('app.corsOrigins', '*'),
+    origin: ['*', 'http://localhost:3000'],
+    // methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
 

@@ -1,17 +1,24 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
 import { LoginDto } from './dto/login.dto';
 import { TokenDto } from './dto/token.dto';
+import { LoginResponseDto } from './dto/login-response.dto';
+
+// 如果存在权限服务，直接导入
+import { PermissionService } from '../permission/permission.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private permissionService: PermissionService, // 添加权限服务依赖
   ) {}
 
   /**
@@ -19,7 +26,7 @@ export class AuthService {
    * @param loginDto 登录信息
    * @returns 令牌信息
    */
-  async login(loginDto: LoginDto): Promise<TokenDto> {
+  async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     const { username, password } = loginDto;
 
     // 查找用户
@@ -42,6 +49,31 @@ export class AuthService {
     // 获取用户角色
     const roles = user.roles?.map((role) => role.roleKey) || [];
 
+    // 判断是否是超级管理员
+    const isAdmin = roles.includes(
+      this.configService.get('app.adminRoleKey', 'admin'),
+    );
+
+    // 获取用户权限
+    let permissions: string[] = [];
+    try {
+      // 获取用户所有权限（包括角色继承的权限）
+      permissions = await this.permissionService.getUserPermissions(user.id);
+      this.logger.debug(
+        `用户[${username}]权限加载完成，共${permissions.length}个权限`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `加载用户[${username}]权限失败: ${error.message}`,
+        error.stack,
+      );
+      // 权限加载失败时，如果是管理员，给予所有权限
+      if (isAdmin) {
+        this.logger.warn(`超级管理员[${username}]权限加载失败，将授予所有权限`);
+        // 此处可以查询所有系统权限并赋予
+      }
+    }
+
     // 更新登录时间
     await this.userService.updateLoginTime(user.id);
 
@@ -50,6 +82,8 @@ export class AuthService {
       sub: user.id,
       username: user.username,
       roles,
+      permissions,
+      isAdmin, // 添加管理员标记，便于验证
     };
 
     // 生成访问令牌
@@ -63,10 +97,37 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(payload);
 
+    // 创建用户响应对象，移除敏感字段
+    const userResponse = {
+      id: user.id,
+      username: user.username,
+      nickname: user.nickname,
+      realName: user.realName,
+      email: user.email,
+      phone: user.phone,
+      gender: user.gender,
+      avatar: user.avatar,
+      status: user.status,
+      deptId: user.deptId,
+      roles:
+        user.roles?.map((role) => ({
+          id: +role.id, // Convert string to number
+          roleName: role.roleName,
+          roleKey: role.roleKey,
+          orderNum: role.orderNum,
+          remark: role.remark,
+          dataScope: role.dataScope,
+          status: role.status,
+        })) || [],
+      createdAt: user.createdAt,
+      lastLoginTime: user.lastLoginTime,
+    };
+
     return {
       accessToken,
       tokenType: 'Bearer',
       expiresIn: expiresInSeconds,
+      userInfo: userResponse,
     };
   }
 

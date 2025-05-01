@@ -6,23 +6,23 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "target": "ES2021",
+    "target": "es2017",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "strictNullChecks": false,
+    "resolveJsonModule": true,
+    "strict": false,
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
+    "esModuleInterop": true,
     "paths": {
+      "@/*": ["src/*"],
       "@core/*": ["src/core/*"],
-      "@common/*": ["src/common/*"],
-      "@modules/*": ["src/modules/*"],
-      "@configs/*": ["src/configs/*"]
+      "@common/*": ["src/common/*"]
     }
-  },
+  }
 }

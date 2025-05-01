@@ -10,6 +10,7 @@ import { PassportModule } from '@nestjs/passport';
 // 拦截器
 import { LoggingInterceptor } from './core/interceptors/logging.interceptor';
 import { TransformInterceptor } from './core/interceptors/transform.interceptor';
+import { DataScopeInterceptor } from './core/interceptors/data-scope.interceptor';
 
 // 过滤器
 import { GlobalExceptionFilter } from './core/filters/global-exception.filter';
@@ -24,6 +25,7 @@ import { RolesGuard } from './core/guards/roles.guard';
 import { UserModule } from './modules/user/user.module';
 import { ToolModule } from './modules/tool/tool.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { PermissionModule } from './modules/permission/permission.module';
 
 // 配置
 import appConfig from './configs/app.config';
@@ -35,7 +37,11 @@ import jwtConfig from './configs/jwt.config';
     // 配置模块
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env.local', '.env', `.env.${process.env.NODE_ENV || 'development'}`],
+      envFilePath: [
+        '.env.local',
+        '.env',
+        `.env.${process.env.NODE_ENV || 'development'}`,
+      ],
       load: [appConfig, databaseConfig, jwtConfig],
     }),
 
@@ -89,6 +95,7 @@ import jwtConfig from './configs/jwt.config';
     AuthModule,
     UserModule,
     ToolModule,
+    PermissionModule,
   ],
   providers: [
     // JWT策略
@@ -134,6 +141,12 @@ import jwtConfig from './configs/jwt.config';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+
+    // 数据权限拦截器
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: DataScopeInterceptor,
     },
   ],
 })

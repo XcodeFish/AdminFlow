@@ -1,82 +1,112 @@
-import { BaseEntity } from '@common/entities/base.entity';
-import { ApiProperty } from '@nestjs/swagger';
-import { Column, Entity, ManyToMany } from 'typeorm';
-import { RoleEntity } from './role.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { RoleEntity } from '../../user/entities/role.entity';
 
+/**
+ * 权限实体
+ */
 @Entity('sys_permission')
-export class PermissionEntity extends BaseEntity {
-  @ApiProperty({
-    description: '权限名称',
-    example: '用户管理'
-  })
-  @Column({ name: 'perm_name', length: 50, comment: '权限名称' })
+export class PermissionEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  /**
+   * 权限名称
+   */
+  @Column({ length: 50, comment: '权限名称' })
   permName: string;
 
-  @ApiProperty({
-    description: '权限标识',
-    example: 'system:user:list'
-  })
-  @Column({ name: 'perm_key', length: 100, unique: true, comment: '权限标识' })
+  /**
+   * 权限标识
+   * 格式: 模块:资源:操作
+   * 如: system:user:create
+   */
+  @Column({ length: 100, unique: true, comment: '权限标识' })
   permKey: string;
 
-  @ApiProperty({
-    description: '权限类型',
-    example: 1,
-    enum: [0, 1, 2]
-  })
-  @Column({ name: 'perm_type', type: 'tinyint', comment: '权限类型：0-菜单，1-按钮，2-接口' })
+  /**
+   * 权限类型
+   * 0: 菜单权限
+   * 1: 操作权限
+   * 2: 数据权限
+   */
+  @Column({ type: 'smallint', comment: '权限类型: 0-菜单 1-操作 2-数据' })
   permType: number;
 
-  @ApiProperty({
-    description: '父级ID',
-    example: 0
-  })
-  @Column({ name: 'parent_id', default: 0, comment: '父级ID' })
-  parentId: number;
+  /**
+   * 父级权限ID
+   */
+  @Column({ type: 'uuid', nullable: true, comment: '父级权限ID' })
+  parentId: string;
 
-  @ApiProperty({
-    description: '排序',
-    example: 1
-  })
+  /**
+   * 显示顺序
+   */
   @Column({ type: 'int', default: 0, comment: '显示顺序' })
   orderNum: number;
 
-  @ApiProperty({
-    description: '路由路径',
-    example: 'user'
-  })
-  @Column({ length: 100, nullable: true, comment: '路由路径' })
+  /**
+   * 路由地址
+   */
+  @Column({ length: 200, nullable: true, comment: '路由地址' })
   path: string;
 
-  @ApiProperty({
-    description: '组件路径',
-    example: 'system/user/index'
-  })
-  @Column({ length: 100, nullable: true, comment: '组件路径' })
+  /**
+   * 组件路径
+   */
+  @Column({ length: 255, nullable: true, comment: '组件路径' })
   component: string;
 
-  @ApiProperty({
-    description: '菜单图标',
-    example: 'user'
-  })
-  @Column({ length: 50, nullable: true, comment: '菜单图标' })
-  icon: string;
-
-  @ApiProperty({
-    description: '状态',
-    example: 1,
-    enum: [0, 1]
-  })
-  @Column({ type: 'tinyint', default: 1, comment: '状态：0-禁用，1-启用' })
+  /**
+   * 权限状态
+   * 0: 禁用
+   * 1: 正常
+   */
+  @Column({ type: 'smallint', default: 1, comment: '状态: 0-禁用 1-正常' })
   status: number;
 
-  @ApiProperty({
-    description: '是否可见',
-    example: 1
-  })
-  @Column({ name: 'is_visible', type: 'tinyint', default: 1, comment: '是否可见：0-隐藏，1-显示' })
+  /**
+   * 是否可见
+   * 0: 隐藏
+   * 1: 显示
+   */
+  @Column({ type: 'smallint', default: 1, comment: '是否可见: 0-隐藏 1-显示' })
   isVisible: number;
 
-  @ManyToMany(() => RoleEntity, role => role.permissions)
+  /**
+   * 菜单图标
+   */
+  @Column({ length: 100, nullable: true, comment: '菜单图标' })
+  icon: string;
+
+  /**
+   * 备注
+   */
+  @Column({ length: 500, nullable: true, comment: '备注' })
+  remark: string;
+
+  /**
+   * 创建时间
+   */
+  @CreateDateColumn({ comment: '创建时间' })
+  createdAt: Date;
+
+  /**
+   * 更新时间
+   */
+  @UpdateDateColumn({ comment: '更新时间' })
+  updatedAt: Date;
+
+  /**
+   * 角色关联
+   */
+  @ManyToMany(() => RoleEntity, (role) => role.permissions)
   roles: RoleEntity[];
 }
