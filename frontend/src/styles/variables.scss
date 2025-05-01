@@ -1,0 +1,26 @@
+// 颜色变量
+$primary-color: #1890ff;
+$success-color: #52c41a;
+$warning-color: #faad14;
+$error-color: #f5222d;
+$heading-color: #333;
+$text-color: #666;
+$disabled-color: #ccc;
+
+// 尺寸变量
+$header-height: 64px;
+$sidebar-width: 256px;
+$border-radius-base: 4px;
+
+// 字体变量
+$font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+$font-size-base: 14px;
+$font-size-lg: 16px;
+$font-size-sm: 12px;
+
+// Z-index
+$zindex-header: 1000;
+$zindex-sidebar: 1000;
+$zindex-modal: 1050;
+$zindex-dropdown: 1050;
+$zindex-tooltip: 1060;

@@ -1,13 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-// 导入变量和混入
-// @import './variables.scss';
-// @import './mixins.scss';
-
 // 重置样式
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -18,6 +11,10 @@ html, body {
 #app {
   height: 100%;
 }
+
+// 导入变量和混入
+@import './variables.scss';
+// @import './mixins.scss';
 
 // Element Plus样式覆盖
 // @import './element-ui.scss';

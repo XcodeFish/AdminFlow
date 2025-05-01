@@ -138,11 +138,14 @@ async function checkAuthentication(to: RouteLocationNormalized) {
 async function setupDynamicRoutes(router: Router, to: RouteLocationNormalized) {
   const permissionStore = usePermissionStore()
 
+  // 如果还没有添加动态路由，则添加
   if (!permissionStore.isDynamicRouteAdded) {
     try {
+      console.log('开始加载动态路由...')
       const { success, routes } = await permissionStore.loadPermissions()
+      console.log('动态路由加载结果:', { success, routesCount: routes?.length || 0 })
 
-      if (success && routes) {
+      if (success && routes && routes.length > 0) {
         // 动态添加路由
         routes.forEach((route: any) => {
           if (!router.hasRoute(route.name as string)) {
@@ -152,13 +155,31 @@ async function setupDynamicRoutes(router: Router, to: RouteLocationNormalized) {
 
         permissionStore.setDynamicRouteAdded(true)
 
+        // 如果当前访问的是根路径或登录页，重定向到仪表盘
+        if (to.path === '/' || to.path === '/login') {
+          return { path: '/dashboard', replace: true }
+        }
+
         // 如果当前路由不存在或需要匹配新添加的路由，则重定向
         if (to.name !== 'NotFound' && !router.hasRoute(to.name as string)) {
           return { path: to.fullPath, replace: true }
         }
+      } else {
+        // 在这里，仪表盘路由已经在constantRoutes中，无需再添加基本路由
+        console.log('未获取到动态路由权限，使用静态路由...')
+        permissionStore.setDynamicRouteAdded(true)
+
+        // 如果当前访问的是根路径或登录页，重定向到仪表盘
+        if (to.path === '/' || to.path === '/login') {
+          return { path: '/dashboard', replace: true }
+        }
       }
     } catch (error) {
       console.error('加载权限路由失败:', error)
+      // 标记动态路由已添加，使用静态路由
+      permissionStore.setDynamicRouteAdded(true)
+
+      // 重定向到错误页
       return { path: '/500' }
     }
   }

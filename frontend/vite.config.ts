@@ -21,6 +21,13 @@ export default defineConfig({
       dts: 'src/components.d.ts'
     })
   ],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@import "@/styles/variables.scss";`
+      }
+    }
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')
@@ -33,7 +40,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:7080',
-        changeOrigin: true,
+        changeOrigin: true
         // rewrite: (path) => path.replace(/^\/api/, '')
       }
     }

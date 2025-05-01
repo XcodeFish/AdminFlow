@@ -115,15 +115,29 @@ const handleLogin = async () => {
       await userStore.login(loginForm)
 
       ElMessage.success('登录成功')
-      console.log('登录成功', userStore.token, userStore.userInfo)
+      console.log('登录成功，准备跳转', {
+        token: userStore.token,
+        hasUserInfo: Boolean(userStore.userInfo)
+      })
 
       // 跳转到首页或重定向页面
       const redirect = route.query.redirect as string
-      router.push(redirect || '/')
+
+      // 添加延迟，让路由系统有时间处理权限
+      setTimeout(() => {
+        if (redirect) {
+          console.log('跳转到重定向页面:', redirect)
+          router.push(redirect)
+        } else {
+          console.log('跳转到默认首页: /dashboard')
+          router.push('/dashboard')
+        }
+      }, 300)
     } catch (error: any) {
       // 登录失败处理
+      console.error('登录失败:', error)
       loading.value = false
-      // ElMessage.error(error.message || '登录失败，请检查用户名和密码')
+      ElMessage.error(error.message || '登录失败，请检查用户名和密码')
     } finally {
       loading.value = false
     }

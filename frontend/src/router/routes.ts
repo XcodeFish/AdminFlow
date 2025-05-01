@@ -1,4 +1,4 @@
-import type { RouteRecordRaw } from 'vue-router';
+import type { RouteRecordRaw } from 'vue-router'
 
 // 静态路由（不需要权限，所有用户都可以访问）
 export const constantRoutes: Array<RouteRecordRaw> = [
@@ -45,11 +45,8 @@ export const constantRoutes: Array<RouteRecordRaw> = [
     name: 'ServerError',
     component: () => import('@/views/error/500.vue'),
     meta: { title: '服务器错误', requiresAuth: false }
-  }
-];
-
-// 动态路由（需要根据用户权限动态添加）
-export const asyncRoutes: Array<RouteRecordRaw> = [
+  },
+  // 添加仪表盘路由到静态路由，确保用户始终能访问
   {
     path: '/',
     name: 'Layout',
@@ -69,7 +66,10 @@ export const asyncRoutes: Array<RouteRecordRaw> = [
       }
     ]
   },
+]
 
+// 动态路由（需要根据用户权限动态添加）
+export const asyncRoutes: Array<RouteRecordRaw> = [
   // 系统管理
   {
     path: '/system',
@@ -144,20 +144,20 @@ export const asyncRoutes: Array<RouteRecordRaw> = [
       //     permission: 'system:dict:list'
       //   }
       // },
-       // 字典数据管理路由
-    // {
-    //   path: 'dict/data',
-    //   name: 'DictData',
-    //   component: () => import('@/views/system/dict/data.vue'),
-    //   meta: {
-    //     title: '字典数据',
-    //     icon: 'ri-book-open-line',
-    //     hidden: true,
-    //     keepAlive: true,
-    //     activeMenu: '/system/dict',
-    //     permission: ['system:dict:list']
-    //   }
-    // },
+      // 字典数据管理路由
+      // {
+      //   path: 'dict/data',
+      //   name: 'DictData',
+      //   component: () => import('@/views/system/dict/data.vue'),
+      //   meta: {
+      //     title: '字典数据',
+      //     icon: 'ri-book-open-line',
+      //     hidden: true,
+      //     keepAlive: true,
+      //     activeMenu: '/system/dict',
+      //     permission: ['system:dict:list']
+      //   }
+      // },
       // {
       //   path: 'config',
       //   name: 'Config',
@@ -253,7 +253,7 @@ export const asyncRoutes: Array<RouteRecordRaw> = [
     name: 'Profile',
     component: () => import('@/layout/index.vue'),
     redirect: '/profile/index',
-    meta: {hidden: true},
+    meta: { hidden: true },
     children: [
       // {
       //   path: 'index',
@@ -272,6 +272,6 @@ export const asyncRoutes: Array<RouteRecordRaw> = [
   {
     path: '/:pathMatch(.*)*',
     redirect: '/404',
-    meta: {hidden: true }
+    meta: { hidden: true }
   }
-];
+]
