@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { PermissionEntity } from './permission.entity';
+import { MenuEntity } from '../../menu/entities/menu.entity';
 
 @Entity('sys_role')
 export class RoleEntity extends BaseEntity {
@@ -90,4 +91,7 @@ export class RoleEntity extends BaseEntity {
     inverseJoinColumn: { name: 'permission_id', referencedColumnName: 'id' },
   })
   permissions: PermissionEntity[];
+
+  @ManyToMany(() => MenuEntity, (menu) => menu.roles)
+  menus: MenuEntity[];
 }

@@ -25,7 +25,9 @@
     "migration:run": "npm run build && npx typeorm-ts-node-commonjs migration:run -d src/configs/migration.config.ts",
     "migration:revert": "npm run build && npx typeorm-ts-node-commonjs migration:revert -d src/configs/migration.config.ts",
     "seed:run": "ts-node -r tsconfig-paths/register src/database/seeds/seed.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "ts-node": "ts-node -r tsconfig-paths/register",
+    "init:menu": "npm run ts-node -- scripts/init-menu.ts"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.0",

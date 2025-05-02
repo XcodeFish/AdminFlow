@@ -141,6 +141,7 @@ class HttpClient {
             // 清除token并跳转登录页
             localStorage.removeItem('token')
             router.push('/login')
+            return Promise.reject(new Error('未授权或登录已过期，请重新登录'))
           }
 
           // 显示错误信息
@@ -161,21 +162,38 @@ class HttpClient {
         // 提取错误信息
         const message = error.response?.data?.message || error.message || '请求失败'
 
-        // 显示错误信息
-        showMessage({
-          type: 'error',
-          message
-        })
-
         // 处理HTTP状态码
         if (error.response) {
           const { status } = error.response
 
           switch (status) {
             case 401:
-              eventBus.emit(RequestEvent.UNAUTHORIZED, error)
-              localStorage.removeItem('token')
-              router.push('/login')
+              // 避免重复处理和消息轰炸
+              if (!router.currentRoute.value.path.includes('/login')) {
+                eventBus.emit(RequestEvent.UNAUTHORIZED, error)
+                localStorage.removeItem('token')
+
+                // 使用静态路由，避免再次请求后端菜单
+                const userStore = window?.$pinia?.state.value?.user
+                if (userStore) {
+                  userStore.token = null
+                  userStore.isLoggedIn = false
+                }
+
+                const permissionStore = window?.$pinia?.state.value?.permission
+                if (permissionStore) {
+                  permissionStore.fallbackToLocalRoutes = true
+                }
+
+                // 显示错误信息
+                showMessage({
+                  type: 'error',
+                  message: '登录已过期，请重新登录'
+                })
+
+                // 重定向到登录页
+                router.push('/login')
+              }
               break
 
             case 403:

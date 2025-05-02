@@ -14,8 +14,9 @@ declare module 'vue' {
     ElBreadcrumbItem: typeof import('element-plus/es')['ElBreadcrumbItem']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElButtonGroup: typeof import('element-plus/es')['ElButtonGroup']
-    ElCard: (typeof import('element-plus/es'))['ElCard']
+    ElCard: typeof import('element-plus/es')['ElCard']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
+    ElCol: typeof import('element-plus/es')['ElCol']
     ElConfigProvider: (typeof import('element-plus/es'))['ElConfigProvider']
     ElContainer: (typeof import('element-plus/es'))['ElContainer']
     ElDatePicker: typeof import('element-plus/es')['ElDatePicker']
@@ -33,7 +34,7 @@ declare module 'vue' {
     ElMenuItem: typeof import('element-plus/es')['ElMenuItem']
     ElMenuItemGroup: (typeof import('element-plus/es'))['ElMenuItemGroup']
     ElPagination: (typeof import('element-plus/es'))['ElPagination']
-    ElRow: (typeof import('element-plus/es'))['ElRow']
+    ElRow: typeof import('element-plus/es')['ElRow']
     ElSelect: (typeof import('element-plus/es'))['ElSelect']
     ElSubMenu: typeof import('element-plus/es')['ElSubMenu']
     ElTable: typeof import('element-plus/es')['ElTable']
@@ -49,5 +50,8 @@ declare module 'vue' {
     TimeDisplay: typeof import('./components/business/common/TimeDisplay.vue')['default']
     TodoList: typeof import('./components/business/dashboard/TodoList.vue')['default']
     TrendChart: typeof import('./components/business/dashboard/TrendChart.vue')['default']
+  }
+  export interface ComponentCustomProperties {
+    vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }

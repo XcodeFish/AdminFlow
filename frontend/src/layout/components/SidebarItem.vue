@@ -1,137 +1,135 @@
 <template>
-  <!-- 如果没有子菜单，并且不隐藏 -->
-  <el-menu-item v-if="!hasOneShowingChild(item.children, item) && !item.meta?.hidden" :index="resolvePath(basePath)"
-    @click="navigateTo(resolvePath(basePath))">
-    <el-icon v-if="item.meta?.icon">
-      <component :is="item.meta.icon" />
-    </el-icon>
-    <template #title>
-      <span class="menu-title">{{ item.meta?.title }}</span>
+  <div v-if="!item.meta || !item.meta.hidden">
+    <!-- 渲染单个路由，没有子路由或只有一个子路由 -->
+    <template
+      v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
+      <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
+        <el-menu-item :index="resolvePath(onlyOneChild.path)">
+          <el-icon v-if="onlyOneChild.meta.icon">
+            <component :is="onlyOneChild.meta.icon" />
+          </el-icon>
+          <template #title>
+            {{ onlyOneChild.meta.title }}
+          </template>
+        </el-menu-item>
+      </app-link>
     </template>
-  </el-menu-item>
 
-  <!-- 如果有一个子菜单 -->
-  <template v-else-if="onlyOneChild && !onlyOneChild.meta?.hidden">
-    <el-menu-item :index="resolvePath(onlyOneChild.path)" @click="navigateTo(resolvePath(onlyOneChild.path))">
-      <el-icon v-if="onlyOneChild.meta?.icon">
-        <component :is="onlyOneChild.meta.icon" />
-      </el-icon>
+    <!-- 渲染子菜单 -->
+    <el-sub-menu v-else :index="resolvePath(item.path)" popper-append-to-body>
       <template #title>
-        <span class="menu-title">{{ onlyOneChild.meta?.title }}</span>
+        <el-icon v-if="item.meta && item.meta.icon">
+          <component :is="item.meta.icon" />
+        </el-icon>
+        <span v-if="item.meta && item.meta.title">{{ item.meta.title }}</span>
       </template>
-    </el-menu-item>
-  </template>
 
-  <!-- 如果有多个子菜单 -->
-  <el-sub-menu v-else :index="resolvePath(basePath)" teleported :popper-class="'sidebar-popper'">
-    <template #title>
-      <el-icon v-if="item.meta?.icon">
-        <component :is="item.meta.icon" />
-      </el-icon>
-      <span class="menu-title">{{ item.meta?.title }}</span>
-    </template>
-
-    <!-- 递归渲染子菜单 -->
-    <sidebar-item v-for="child in item.children" :key="child.path" :item="child" :base-path="resolvePath(child.path)" />
-  </el-sub-menu>
+      <!-- 递归渲染子菜单项 -->
+      <sidebar-item v-for="child in item.children" :key="child.path" :item="child"
+        :base-path="resolvePath(child.path)" />
+    </el-sub-menu>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter, RouteRecordRaw } from 'vue-router'
+import { ref, computed } from 'vue'
+import { RouteRecordRaw } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { isExternal } from '@/utils/validate'
-import path from 'path-browserify'
+import AppLink from './Link.vue'
 import { globalErrorHandler } from '@/composables/useErrorHandler'
 
-interface RouteItem {
-  path: string
-  name?: string | symbol
-  meta?: {
-    title?: string
-    icon?: string
-    hidden?: boolean
-    activeMenu?: string
-    [key: string]: any
-  }
-  children?: RouteItem[]
-  component?: any
-  [key: string]: any
-}
-
-// 属性定义
-interface Props {
-  item: RouteItem
-  basePath: string
-}
-
-const props = defineProps<Props>()
 const router = useRouter()
-const onlyOneChild = ref<RouteItem | null>(null)
+
+const props = defineProps({
+  item: {
+    type: Object as () => RouteRecordRaw,
+    required: true
+  },
+  basePath: {
+    type: String,
+    default: ''
+  }
+})
+
+// 存储唯一子路由
+const onlyOneChild = ref<any>(null)
 
 /**
- * 判断是否只有一个显示的子菜单
+ * 判断是否只有一个显示的子路由
  */
-const hasOneShowingChild = (children: RouteItem[] = [], parent: RouteItem): boolean => {
-  try {
-    if (!children) {
-      children = []
+function hasOneShowingChild(children: RouteRecordRaw[] = [], parent: RouteRecordRaw) {
+  if (!children) {
+    children = []
+  }
+
+  // 过滤掉隐藏的路由
+  const showingChildren = children.filter(item => {
+    if (item.meta && item.meta.hidden) {
+      return false
     }
+    return true
+  })
 
-    // 过滤出不隐藏的子菜单
-    const showingChildren = children.filter(item => {
-      if (item.meta?.hidden) {
-        return false
-      }
-      // 当前项作为唯一子项
-      onlyOneChild.value = item
-      return true
-    })
-
-    // 没有子菜单，使用父级
-    if (showingChildren.length === 0) {
-      onlyOneChild.value = { ...parent, path: '' }
-      return true
-    }
-
-    return showingChildren.length === 1
-  } catch (error) {
-    // 处理错误
-    globalErrorHandler.handleError(error, 'warning', {
-      showMessage: false,
-      showNotification: false,
-      log: true
-    })
-
-    // 出错时返回保守结果，使用父级
-    onlyOneChild.value = { ...parent, path: '' }
+  // 如果只有一个子路由，则直接显示子路由
+  if (showingChildren.length === 1) {
+    onlyOneChild.value = showingChildren[0]
     return true
   }
+
+  // 如果没有子路由，则显示父路由
+  if (showingChildren.length === 0) {
+    onlyOneChild.value = { ...parent, path: '', noShowingChildren: true }
+    return true
+  }
+
+  return false
 }
 
 /**
- * 解析路径
+ * 解析路径，处理嵌套路由路径
  */
-const resolvePath = (routePath: string): string => {
-  try {
-    if (isExternal(routePath)) {
-      return routePath
-    }
-    if (isExternal(props.basePath)) {
-      return props.basePath
-    }
-
-    // 兼容windowsPath
-    return path.resolve(props.basePath, routePath).replace(/\\/g, '/')
-  } catch (error) {
-    // 处理错误
-    globalErrorHandler.handleError(error, 'warning', {
-      showMessage: false,
-      log: true
-    })
-
-    // 错误时返回源路径
-    return routePath || props.basePath || '/'
+function resolvePath(routePath: string) {
+  if (isExternal(routePath)) {
+    return routePath
   }
+
+  if (isExternal(props.basePath)) {
+    return props.basePath
+  }
+
+  // 处理完整路径
+  if (routePath.startsWith('/')) {
+    return routePath
+  }
+
+  // 清理路径，确保没有双斜杠
+  const cleanRoutePath = routePath.startsWith('/') ? routePath.slice(1) : routePath
+
+  // 检查子路径是否已经包含在父路径中，避免重复路径段
+  if (props.basePath && cleanRoutePath) {
+    const basePathSegments = props.basePath.split('/').filter(Boolean)
+    const routePathSegments = cleanRoutePath.split('/').filter(Boolean)
+
+    // 检查第一个路径段是否重复
+    if (routePathSegments.length > 0 &&
+      basePathSegments.length > 0 &&
+      basePathSegments[basePathSegments.length - 1] === routePathSegments[0]) {
+      // 移除子路径的第一个段，因为它已经包含在父路径中
+      routePathSegments.shift()
+      const newRoutePath = routePathSegments.join('/')
+      const basePathClean = props.basePath.endsWith('/') ? props.basePath.slice(0, -1) : props.basePath
+      return newRoutePath ? `${basePathClean}/${newRoutePath}` : basePathClean
+    }
+  }
+
+  // 标准路径拼接逻辑
+  if (props.basePath) {
+    const basePathClean = props.basePath.endsWith('/') ? props.basePath.slice(0, -1) : props.basePath
+    return cleanRoutePath ? `${basePathClean}/${cleanRoutePath}` : basePathClean
+  }
+
+  return cleanRoutePath
 }
 
 /**

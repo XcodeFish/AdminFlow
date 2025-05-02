@@ -66,7 +66,7 @@ const themeColors = ref({
 const activeMenu = computed(() => {
   try {
     const { meta, path } = route
-    return typeof meta.activeMenu === 'string' ? meta.activeMenu : path
+    return meta?.activeMenu ? meta.activeMenu : path
   } catch (error) {
     // 处理路由信息读取错误
     globalErrorHandler.handleError(error, 'warning', {
@@ -81,31 +81,14 @@ const activeMenu = computed(() => {
 // 可访问的路由
 const routes = computed(() => {
   try {
-    // 获取所有路由
-    const routes = router.getRoutes().filter(route => {
-      // 只显示不隐藏的路由
-      return !route.meta?.hidden && route.children && route.children.length > 0
-    })
-
-    return routes.map(route => {
-      // 转换为SidebarItem组件需要的格式
-      return {
-        path: route.path,
-        name: route.name,
-        meta: route.meta,
-        children: route.children.map(child => ({
-          path: child.path,
-          name: child.name,
-          meta: child.meta,
-          children: child.children
-        }))
-      }
-    })
+    // 直接使用permissionStore中的routes
+    return permissionStore.routes.filter(route => {
+      // 只显示不隐藏的路由，并且保留dashboard路由
+      return (!route.meta?.hidden || route.path === '/') &&
+             (route.children?.length > 0 || route.name === 'Dashboard');
+    });
   } catch (error) {
-    globalErrorHandler.handleError(error, 'warning', {
-      showMessage: false,
-      log: true
-    })
+    console.error('获取路由失败:', error)
     return []
   }
 })
@@ -113,8 +96,8 @@ const routes = computed(() => {
 // 重新加载路由信息
 async function reloadRoutes() {
   try {
-    // 如果需要，这里可以添加重新获取路由权限的逻辑
-    await permissionStore.generateRoutes()
+    console.log('重新加载路由配置...')
+    await permissionStore.loadPermissions()
   } catch (error) {
     globalErrorHandler.handleError(error, 'error', {
       showNotification: true
@@ -124,16 +107,13 @@ async function reloadRoutes() {
 
 // 组件挂载时初始化
 onMounted(() => {
-  if (!permissionStore.routes.length) {
-    const loadRoutesWrapper = globalErrorHandler.createAsyncWrapper(
-      async () => await permissionStore.generateRoutes(),
-      {
-        level: 'error',
-        showNotification: true
-      }
-    )
-
-    loadRoutesWrapper()
+  if (permissionStore.routes.length === 0) {
+    console.log('路由未加载，开始加载路由...')
+    permissionStore.loadPermissions().catch(error => {
+      console.error('加载路由出错:', error)
+    })
+  } else {
+    console.log('路由已加载，路由数量:', permissionStore.routes.length)
   }
 })
 </script>

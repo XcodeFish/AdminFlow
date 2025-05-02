@@ -65,7 +65,7 @@ export const constantRoutes: Array<RouteRecordRaw> = [
         }
       }
     ]
-  },
+  }
 ]
 
 // 动态路由（需要根据用户权限动态添加）

@@ -26,6 +26,7 @@ import { UserModule } from './modules/user/user.module';
 import { ToolModule } from './modules/tool/tool.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PermissionModule } from './modules/permission/permission.module';
+import { MenuModule } from './modules/menu/menu.module';
 
 // 配置
 import appConfig from './configs/app.config';
@@ -96,6 +97,7 @@ import jwtConfig from './configs/jwt.config';
     UserModule,
     ToolModule,
     PermissionModule,
+    MenuModule,
   ],
   providers: [
     // JWT策略

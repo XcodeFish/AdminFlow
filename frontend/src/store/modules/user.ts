@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { UserInfo, LoginParams, LoginResponse } from '@/types/auth'
 import request from '@/utils/request'
 import { login } from '@/api/modules/auth'
+import { usePermissionStore } from '@/store/modules/permission'
 
 interface UserState {
   token: string | null
@@ -128,12 +129,27 @@ export const useUserStore = defineStore('user', {
 
     async logoutAction(): Promise<void> {
       try {
+        // 尝试调用登出接口
         await request.post('/auth/logout')
+      } catch (error) {
+        console.error('登出接口调用失败:', error)
+        // 即使接口调用失败，也继续执行登出流程
       } finally {
+        // 清除用户数据
         this.clearToken()
         this.userInfo = {}
         this.roles = []
         this.permissions = []
+
+        // 重置权限存储
+        const permissionStore = usePermissionStore()
+        permissionStore.resetState()
+
+        // 重置其他可能的存储（如果有）
+
+        // 清除localStorage中可能的其他数据
+        localStorage.removeItem('user-store')
+        localStorage.removeItem('permission-store')
       }
     },
 
