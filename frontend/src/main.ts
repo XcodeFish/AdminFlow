@@ -6,6 +6,8 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import './styles/index.scss'
+// 导入Element Plus图标
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 // 创建应用实例
 const app = createApp(App)
@@ -38,6 +40,11 @@ pinia.use(piniaPluginPersistedstate)
 app.use(router)
 app.use(pinia)
 app.use(ElementPlus, { size: 'default', zIndex: 2000 })
+
+// 注册所有Element Plus图标
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(key, component)
+}
 
 // 挂载应用
 app.mount('#app')

@@ -85,8 +85,8 @@ const routes = computed(() => {
     return permissionStore.routes.filter(route => {
       // 只显示不隐藏的路由，并且保留dashboard路由
       return (!route.meta?.hidden || route.path === '/') &&
-             (route.children?.length > 0 || route.name === 'Dashboard');
-    });
+        (route.children?.length > 0 || route.name === 'Dashboard')
+    })
   } catch (error) {
     console.error('获取路由失败:', error)
     return []

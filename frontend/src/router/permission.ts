@@ -145,11 +145,22 @@ async function setupDynamicRoutes(router: Router, to: RouteLocationNormalized) {
       const { success, routes } = await permissionStore.loadPermissions()
       console.log('动态路由加载结果:', { success, routesCount: routes?.length || 0 })
 
+      // 打印当前路由路径，用于调试
+      console.log('当前路由路径:', to.path)
+      console.log('是否存在该路由:', router.hasRoute(to.name as string))
+
+      // 打印所有已注册路由
+      console.log('权限加载后所有注册路由:')
+      router.getRoutes().forEach((route) => {
+        console.log(`- [${String(route.name)}] ${route.path}`)
+      })
+
       if (success && routes && routes.length > 0) {
         // 动态添加路由
         routes.forEach((route: any) => {
           if (!router.hasRoute(route.name as string)) {
             router.addRoute(route)
+            console.log(`添加路由: ${route.path} (${String(route.name)})`)
           }
         })
 
@@ -162,6 +173,7 @@ async function setupDynamicRoutes(router: Router, to: RouteLocationNormalized) {
 
         // 如果当前路由不存在或需要匹配新添加的路由，则重定向
         if (to.name !== 'NotFound' && !router.hasRoute(to.name as string)) {
+          console.log(`当前路由 ${to.path} 不存在，重定向到同路径`)
           return { path: to.fullPath, replace: true }
         }
       } else {

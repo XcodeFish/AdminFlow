@@ -146,6 +146,7 @@ import { getDashboardStats, getUserGrowthTrend, getUserDistribution, getTodoList
 import { TodoItem, TodoItemForm } from '@/types/dashboard'
 import { ElMessage, FormInstance } from 'element-plus'
 import * as echarts from 'echarts'
+import { useRouter } from 'vue-router'
 
 // 用户信息
 const userStore = useUserStore()
@@ -160,14 +161,6 @@ const weather = reactive({
 // 当前时间
 const currentTime = ref('06:39')
 const timerInterval = ref<ReturnType<typeof setInterval> | null>(null)
-
-// 更新时间函数
-const updateTime = () => {
-  const now = new Date()
-  const hours = String(now.getHours()).padStart(2, '0')
-  const minutes = String(now.getMinutes()).padStart(2, '0')
-  currentTime.value = `${hours}:${minutes}`
-}
 
 // 加载状态
 const loading = reactive({
@@ -432,6 +425,28 @@ const resizeCharts = () => {
   userGrowthChart?.resize()
   userDistributionChart?.resize()
 }
+
+// 更新时间函数
+const updateTime = () => {
+  const now = new Date()
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  currentTime.value = `${hours}:${minutes}`
+}
+
+// 测试路由功能
+function testSystemMenuRoute() {
+  const hasRoute = router.hasRoute('Menu')
+  const allRoutes = router.getRoutes()
+  const systemRoutes = allRoutes.filter(r => r.path.includes('system'))
+
+  console.log('菜单管理路由存在:', hasRoute)
+  console.log('所有系统路由:', systemRoutes)
+
+  alert(`菜单管理路由存在: ${hasRoute}\n系统路由数量: ${systemRoutes.length}`)
+}
+
+const router = useRouter()
 
 onMounted(async () => {
   console.log('仪表盘组件已加载')

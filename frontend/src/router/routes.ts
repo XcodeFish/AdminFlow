@@ -46,13 +46,14 @@ export const constantRoutes: Array<RouteRecordRaw> = [
     component: () => import('@/views/error/500.vue'),
     meta: { title: '服务器错误', requiresAuth: false }
   },
-  // 添加仪表盘路由到静态路由，确保用户始终能访问
+  // 主布局和基础路由
   {
     path: '/',
     name: 'Layout',
     component: () => import('@/layout/index.vue'),
     redirect: '/dashboard',
     children: [
+      // 仪表盘
       {
         path: 'dashboard',
         name: 'Dashboard',
@@ -65,188 +66,46 @@ export const constantRoutes: Array<RouteRecordRaw> = [
         }
       }
     ]
+  },
+  // 系统管理（单独一个主路由）
+  {
+    path: '/system',
+    name: 'System',
+    component: () => import('@/layout/index.vue'),
+    redirect: '/system/menu',
+    meta: {
+      title: '系统管理',
+      icon: 'Setting',
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: 'menu',
+        name: 'Menu',
+        component: () => import('@/views/system/menu/index.vue'),
+        meta: {
+          title: '菜单管理',
+          icon: 'Menu',
+          requiresAuth: true
+        }
+      },
+      // 添加测试路由
+      {
+        path: 'test',
+        name: 'SystemTest',
+        component: () => import('@/views/system/test.vue'),
+        meta: {
+          title: '测试页面',
+          icon: 'Tools',
+          requiresAuth: true
+        }
+      }
+    ]
   }
 ]
 
 // 动态路由（需要根据用户权限动态添加）
 export const asyncRoutes: Array<RouteRecordRaw> = [
-  // 系统管理
-  {
-    path: '/system',
-    name: 'System',
-    component: () => import('@/layout/index.vue'),
-    redirect: '/system/user',
-    meta: {
-      title: '系统管理',
-      icon: 'Setting',
-      requiresAuth: true,
-      keepAlive: true,
-      permission: 'system:view'
-    },
-    children: [
-      // {
-      //   path: 'user',
-      //   name: 'User',
-      //   component: () => import('@/views/system/user/index.vue'),
-      //   meta: {
-      //     title: '用户管理',
-      //     icon: 'User',
-      //     requiresAuth: true,
-      //     keepAlive: true,
-      //     permission: 'system:user:list'
-      //   }
-      // },
-      // {
-      //   path: 'role',
-      //   name: 'Role',
-      //   component: () => import('@/views/system/role/index.vue'),
-      //   meta: {
-      //     title: '角色管理',
-      //     icon: 'UserFilled',
-      //     requiresAuth: true,
-      //     keepAlive: true,
-      //     permission: 'system:role:list'
-      //   }
-      // },
-      // {
-      //   path: 'menu',
-      //   name: 'Menu',
-      //   component: () => import('@/views/system/menu/index.vue'),
-      //   meta: {
-      //     title: '菜单管理',
-      //     icon: 'Menu',
-      //     requiresAuth: true,
-      //     keepAlive: true,
-      //     permission: 'system:menu:list'
-      //   }
-      // },
-      // {
-      //   path: 'dept',
-      //   name: 'Dept',
-      //   component: () => import('@/views/system/dept/index.vue'),
-      //   meta: {
-      //     title: '部门管理',
-      //     icon: 'OfficeBuilding',
-      //     requiresAuth: true,
-      //     keepAlive: true,
-      //     permission: 'system:dept:list'
-      //   }
-      // },
-      // {
-      //   path: 'dict',
-      //   name: 'Dict',
-      //   component: () => import('@/views/system/dict/index.vue'),
-      //   meta: {
-      //     title: '字典管理',
-      //     icon: 'ri-book-2-line',
-      //     requiresAuth: true,
-      //     keepAlive: true,
-      //     permission: 'system:dict:list'
-      //   }
-      // },
-      // 字典数据管理路由
-      // {
-      //   path: 'dict/data',
-      //   name: 'DictData',
-      //   component: () => import('@/views/system/dict/data.vue'),
-      //   meta: {
-      //     title: '字典数据',
-      //     icon: 'ri-book-open-line',
-      //     hidden: true,
-      //     keepAlive: true,
-      //     activeMenu: '/system/dict',
-      //     permission: ['system:dict:list']
-      //   }
-      // },
-      // {
-      //   path: 'config',
-      //   name: 'Config',
-      //   component: () => import('@/views/system/config/index.vue'),
-      //   meta: {
-      //     title: '参数配置',
-      //     icon: 'Tools',
-      //     requiresAuth: true,
-      //     keepAlive: true,
-      //     permission: 'system:config:list'
-      //   }
-      // }
-    ]
-  },
-
-  // 系统监控
-  // {
-  //   path: '/monitor',
-  //   name: 'Monitor',
-  //   component: () => import('@/layouts/index.vue'),
-  //   redirect: '/monitor/server',
-  //   meta: {
-  //     title: '系统监控',
-  //     icon: 'Monitor',
-  //     requiresAuth: true,
-  //     permission: 'monitor:view'
-  //   },
-  //   children: [
-  //     {
-  //       path: 'server',
-  //       name: 'Server',
-  //       component: () => import('@/views/monitor/server/index.vue'),
-  //       meta: {
-  //         title: '服务器监控',
-  //         icon: 'CpuChip',
-  //         requiresAuth: true,
-  //         permission: 'monitor:server:list'
-  //       }
-  //     },
-  //     {
-  //       path: 'online',
-  //       name: 'Online',
-  //       component: () => import('@/views/monitor/online/index.vue'),
-  //       meta: {
-  //         title: '在线用户',
-  //         icon: 'UserFilled',
-  //         requiresAuth: true,
-  //         permission: 'monitor:online:list'
-  //       }
-  //     },
-  //     {
-  //       path: 'log',
-  //       name: 'Log',
-  //       component: () => import('@/layouts/index.vue'),
-  //       redirect: '/monitor/log/operation',
-  //       meta: {
-  //         title: '日志管理',
-  //         icon: 'Notebook',
-  //         requiresAuth: true,
-  //         permission: 'monitor:log:view'
-  //       },
-  //       children: [
-  //         {
-  //           path: 'operation',
-  //           name: 'OperationLog',
-  //           component: () => import('@/views/monitor/log/operation/index.vue'),
-  //           meta: {
-  //             title: '操作日志',
-  //             icon: 'Operation',
-  //             requiresAuth: true,
-  //             permission: 'monitor:log:operation:list'
-  //           }
-  //         },
-  //         {
-  //           path: 'login',
-  //           name: 'LoginLog',
-  //           component: () => import('@/views/monitor/log/login/index.vue'),
-  //           meta: {
-  //             title: '登录日志',
-  //             icon: 'Reading',
-  //             requiresAuth: true,
-  //             permission: 'monitor:log:login:list'
-  //           }
-  //         }
-  //       ]
-  //     }
-  //   ]
-  // },
-
   // 个人中心
   {
     path: '/profile',
@@ -254,18 +113,7 @@ export const asyncRoutes: Array<RouteRecordRaw> = [
     component: () => import('@/layout/index.vue'),
     redirect: '/profile/index',
     meta: { hidden: true },
-    children: [
-      // {
-      //   path: 'index',
-      //   name: 'ProfileIndex',
-      //   component: () => import('@/views/profile/index.vue'),
-      //   meta: {
-      //     title: '个人中心',
-      //     icon: 'User',
-      //     requiresAuth: true
-      //   }
-      // }
-    ]
+    children: []
   },
 
   // 匹配所有未定义的路由，必须放在最后

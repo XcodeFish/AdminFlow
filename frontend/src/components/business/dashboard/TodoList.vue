@@ -116,8 +116,8 @@ const getStatusText = (status: number) => {
   return statusMap[status] || '未知'
 }
 
-const getStatusType = (status: number) => {
-  const typeMap: Record<number, string> = {
+const getStatusType = (status: number): 'success' | 'warning' | 'info' | 'danger' | 'primary' => {
+  const typeMap: Record<number, 'success' | 'warning' | 'info' | 'danger' | 'primary'> = {
     0: 'warning',
     1: 'success',
     2: 'info'

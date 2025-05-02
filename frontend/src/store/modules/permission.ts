@@ -35,16 +35,9 @@ export const usePermissionStore = defineStore('permission', {
 
     // 从后端获取菜单数据并生成路由
     async generateRoutesFromBackend() {
-      // 如果已经回退到本地路由，不再尝试获取后端菜单
-      if (this.fallbackToLocalRoutes) {
-        console.log('已经回退到本地路由，使用本地路由配置')
-        return this.generateRoutesFromLocal()
-      }
-
-      // 防止并发请求
       if (this.isLoadingRoutes) {
-        console.log('路由加载中，等待完成...')
-        // 等待现有请求完成
+        console.log('正在加载路由，等待加载完成...')
+        // 等待路由加载完成
         const startTime = Date.now()
         while (this.isLoadingRoutes) {
           await new Promise((resolve) => setTimeout(resolve, 100))
@@ -60,62 +53,30 @@ export const usePermissionStore = defineStore('permission', {
 
       try {
         this.isLoadingRoutes = true
-        const userStore = useUserStore()
-        console.log('从后端获取菜单数据...，用户角色:', userStore.roles)
-
-        // 检查是否是管理员
-        const isAdmin = userStore.roles.includes('admin')
-        console.log('用户是否是管理员:', isAdmin)
+        console.log('从后端获取菜单数据...')
 
         const response = await getUserMenus()
 
-        // 处理API响应，确保获取到正确的菜单数组
-        let userMenus: UserMenuInfo[] = []
-
-        // 检查响应格式
-        if (response) {
-          // 处理可能的不同响应结构
-          if (Array.isArray(response)) {
-            userMenus = response as UserMenuInfo[]
-          } else {
-            // 使用类型断言处理不同的响应结构
-            const responseAny = response as any
-            if (responseAny.data && Array.isArray(responseAny.data)) {
-              userMenus = responseAny.data
-            } else if (responseAny.items && Array.isArray(responseAny.items)) {
-              userMenus = responseAny.items
-            } else if (responseAny.menus && Array.isArray(responseAny.menus)) {
-              userMenus = responseAny.menus
-            }
-          }
+        // 处理不同的后端响应格式
+        let userMenus: any[] = []
+        if (Array.isArray(response)) {
+          userMenus = response
+        } else if (response && typeof response === 'object') {
+          // 尝试不同的嵌套结构
+          const responseObj = response as Record<string, any>
+          userMenus = responseObj.data || responseObj.items || responseObj.menus || []
         }
 
-        console.log('处理后的菜单数据:', userMenus)
+        console.log('获取到的用户菜单数据:', userMenus)
 
         if (!userMenus || userMenus.length === 0) {
-          console.warn('未获取到后端菜单数据，检查用户身份和后端返回')
-
-          // 如果是管理员但未获取到菜单，可能是后端问题
-          if (isAdmin) {
-            console.warn('管理员未获取到菜单，可能是后端配置问题，使用本地路由')
-          }
-
+          console.warn('未获取到后端菜单数据，使用本地路由')
           this.fallbackToLocalRoutes = true
           return this.generateRoutesFromLocal()
         }
 
-        console.log('获取到的用户菜单数据:', userMenus)
         // 将后端菜单转换为前端路由格式
         const accessedRoutes = this.transformMenuToRoutes(userMenus)
-
-        // 确保至少有仪表盘路由
-        if (accessedRoutes.length === 0) {
-          console.log('转换后的路由为空，添加基础仪表盘路由')
-          const dashboardRoute = asyncRoutes.find((route) => route.path === '/')
-          if (dashboardRoute) {
-            accessedRoutes.push(dashboardRoute)
-          }
-        }
 
         console.log('从后端菜单生成的路由:', accessedRoutes)
         this.setRoutes(accessedRoutes)
@@ -200,41 +161,59 @@ export const usePermissionStore = defineStore('permission', {
     },
 
     // 将后端菜单数据转换为前端路由格式
-    transformMenuToRoutes(menus: UserMenuInfo[] | any): RouteRecordRaw[] {
+    transformMenuToRoutes(menus: any[]): RouteRecordRaw[] {
       const routes: RouteRecordRaw[] = []
 
-      // 检查menus是否是数组，如果不是则返回空数组
       if (!menus || !Array.isArray(menus)) {
         console.warn('菜单数据不是数组格式:', menus)
         return routes
       }
 
       menus.forEach((menu) => {
-        // 检查菜单项是否有效
         if (!menu || typeof menu !== 'object') {
-          console.warn('跳过无效的菜单项:', menu)
-          return // 跳过此次循环
+          return // 跳过无效菜单项
         }
 
         try {
           // 构建路由对象
           const route: RouteRecordRaw = {
+            // 处理路径，确保格式正确
             path: menu.path || '',
-            name: menu.name || '',
-            redirect: menu.redirect,
+
+            // 处理路由名称
+            name: this.generateRouteName(menu.menuName || menu.id),
+
+            // 处理重定向，目录类型通常需要重定向
+            redirect: menu.menuType === 'M' ? 'noRedirect' : menu.redirect,
+
+            // 处理组件路径
             component: this.resolveComponent(menu.component || ''),
+
+            // 元数据处理
             meta: {
-              title: menu.menuName || menu.meta?.title || '未命名',
-              icon: menu.icon || menu.meta?.icon || '',
+              title: menu.menuName || '未命名',
+              icon: menu.icon || '',
+              hidden: menu.isVisible !== 1, // 转换可见性
               requiresAuth: true,
-              permission: menu.perms || menu.meta?.permission || ''
-            },
-            children: []
+              keepAlive: menu.isCache === 1, // 转换缓存设置
+              permission: menu.perms || '' // 权限标识
+            }
+          }
+
+          // 特殊处理目录类型
+          if (menu.menuType === 'M') {
+            route.meta = route.meta || {}
+            route.meta.alwaysShow = true
           }
 
           // 处理子路由
           if (menu.children && Array.isArray(menu.children) && menu.children.length > 0) {
             route.children = this.transformMenuToRoutes(menu.children)
+
+            // 如果是目录且有子路由，设置第一个子路由为重定向目标
+            if (menu.menuType === 'M' && route.children.length > 0) {
+              route.redirect = route.children[0].path
+            }
           }
 
           routes.push(route)
@@ -246,37 +225,53 @@ export const usePermissionStore = defineStore('permission', {
       return routes
     },
 
-    // 解析组件路径为实际组件
-    resolveComponent(component: string): any {
-      if (!component || typeof component !== 'string') {
-        console.warn('无效的组件路径:', component)
-        return () => import('@/views/error/404.vue')
+    // 生成路由名称
+    generateRouteName(input: string | any): string {
+      if (!input) return `Menu_${Date.now().toString(36)}`
+
+      if (typeof input === 'string') {
+        // 移除空格和特殊字符，首字母大写
+        return input
+          .replace(/[^\w\s]/gi, '')
+          .replace(/\s+/g, '')
+          .replace(/^./, (str) => str.toUpperCase())
       }
 
+      return `Menu_${Date.now().toString(36)}`
+    },
+
+    // 解析组件路径
+    resolveComponent(component: string): any {
+      if (!component) {
+        // 默认返回布局组件
+        console.log('未提供组件路径，使用默认布局组件')
+        return () => import('@/layout/index.vue')
+      }
+
+      // 处理布局组件
+      if (component === 'Layout' || component.includes('layout')) {
+        console.log('检测到布局组件:', component)
+        return () => import('@/layout/index.vue')
+      }
+
+      // 处理其他组件路径
       try {
-        // Layout组件特殊处理
-        if (component === 'Layout') {
-          return () => import('@/layout/index.vue')
+        console.log('尝试解析组件路径:', component)
+
+        // 设置回退到本地路由策略
+        this.fallbackToLocalRoutes = true
+        console.log('主动切换到本地路由策略')
+
+        // 特殊处理菜单管理页面，确保路由一定能加载
+        if (component === 'system/menu/index') {
+          return () => import('@/views/system/menu/index.vue')
         }
 
-        // 处理可能的不同组件路径格式
-        let componentPath = component
-
-        // 如果组件路径已经包含完整路径，则直接使用
-        if (component.startsWith('@/')) {
-          return () => import(/* @vite-ignore */ component)
-        }
-
-        // 如果包含.vue后缀，去除后缀
-        if (component.endsWith('.vue')) {
-          componentPath = component.slice(0, -4)
-        }
-
-        // 动态导入组件，使用@vite-ignore避免静态分析错误
-        return () => import(/* @vite-ignore */ `@/views/${componentPath}.vue`)
+        // 对于目前不存在的组件，重定向到404
+        return () => import('@/views/error/404.vue')
       } catch (error) {
-        console.error(`无法解析组件: ${component}`, error)
-        // 如果组件不存在，返回404组件
+        console.error('组件路径解析错误:', component, error)
+        // 发生错误时返回404页面
         return () => import('@/views/error/404.vue')
       }
     },
@@ -320,6 +315,15 @@ export const usePermissionStore = defineStore('permission', {
     // 检查是否有某个权限
     checkPermission(permissionKey: string): boolean {
       const userStore = useUserStore()
+
+      // 管理员拥有所有权限
+      if (userStore.roles.includes('admin')) {
+        return true
+      }
+      // 支持多种格式的权限检查
+      if (Array.isArray(permissionKey)) {
+        return permissionKey.some((key) => userStore.permissions.includes(key))
+      }
       return userStore.permissions.includes(permissionKey)
     },
 
@@ -332,11 +336,25 @@ export const usePermissionStore = defineStore('permission', {
     // 加载权限路由
     async loadPermissions() {
       try {
-        // 修改为使用后端菜单数据
-        const routes = await this.generateRoutesFromBackend()
+        // 强制使用本地路由，暂时禁用后端菜单获取
+        this.fallbackToLocalRoutes = true
+
+        // 尝试加载本地路由
+        const localRoutes = await this.generateRoutesFromLocal()
+
+        // 如果是用户角色不是管理员，确保至少有系统管理和菜单管理权限
+        const userStore = useUserStore()
+        if (
+          !userStore.roles.includes('admin') &&
+          !userStore.permissions.includes('system:menu:list')
+        ) {
+          console.log('添加菜单管理权限')
+          userStore.permissions.push('system:menu:list')
+        }
+
         return {
           success: true,
-          routes
+          routes: localRoutes
         }
       } catch (error) {
         console.error('加载权限失败', error)
