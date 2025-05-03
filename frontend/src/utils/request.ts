@@ -1,6 +1,8 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
+import { useUserStore } from '@/store/modules/user'
+import { usePermissionStore } from '@/store/modules/permission'
 
 // 改为这样，移除枚举声明的export
 enum RequestEvent {
@@ -159,30 +161,31 @@ class HttpClient {
         // 触发请求错误事件
         eventBus.emit(RequestEvent.ERROR, error)
 
-        // 提取错误信息
-        const message = error.response?.data?.message || error.message || '请求失败'
-
         // 处理HTTP状态码
         if (error.response) {
           const { status } = error.response
 
           switch (status) {
             case 401:
-              // 避免重复处理和消息轰炸
               if (!router.currentRoute.value.path.includes('/login')) {
                 eventBus.emit(RequestEvent.UNAUTHORIZED, error)
                 localStorage.removeItem('token')
 
-                // 使用静态路由，避免再次请求后端菜单
-                const userStore = window?.$pinia?.state.value?.user
-                if (userStore) {
-                  userStore.token = null
-                  userStore.isLoggedIn = false
-                }
+                // 使用正确的store引用
+                try {
+                  const userStore = useUserStore()
+                  const permissionStore = usePermissionStore()
 
-                const permissionStore = window?.$pinia?.state.value?.permission
-                if (permissionStore) {
-                  permissionStore.fallbackToLocalRoutes = true
+                  if (userStore) {
+                    userStore.token = null
+                    userStore.isLoggedIn = false
+                  }
+
+                  if (permissionStore) {
+                    permissionStore.fallbackToLocalRoutes = true
+                  }
+                } catch (e) {
+                  console.error('无法重置store状态', e)
                 }
 
                 // 显示错误信息
@@ -191,23 +194,32 @@ class HttpClient {
                   message: '登录已过期，请重新登录'
                 })
 
-                // 重定向到登录页
                 router.push('/login')
               }
               break
 
             case 403:
-              eventBus.emit(RequestEvent.FORBIDDEN, error)
+              if (error.config.url.baseURL('api')) {
+                eventBus.emit(RequestEvent.FORBIDDEN, error)
+                return Promise.reject(error)
+              }
               router.push('/403')
               break
 
             case 404:
-              eventBus.emit(RequestEvent.NOT_FOUND, error)
+              // 如果是API调用，只记录错误，不重定向
+              if (error.config.url.baseURL('api')) {
+                eventBus.emit(RequestEvent.NOT_FOUND, error)
+                return Promise.reject(error)
+              }
               router.push('/404')
               break
 
             case 500:
-              eventBus.emit(RequestEvent.SERVER_ERROR, error)
+              if (error.config.url.baseURL('api')) {
+                eventBus.emit(RequestEvent.SERVER_ERROR, error)
+                return Promise.reject(error)
+              }
               router.push('/500')
               break
           }
@@ -258,6 +270,14 @@ class HttpClient {
   }
 
   /**
+   * PATCH请求
+   */
+  patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const cleanedData = data ? cleanParams(data) : {}
+    return this.instance.patch(url, cleanedData, config)
+  }
+
+  /**
    * 文件上传
    */
   upload<T = any>(url: string, file: File, data?: any, config?: AxiosRequestConfig): Promise<T> {
@@ -293,6 +313,7 @@ export { http, eventBus, RequestEvent, showMessage }
 export const get = http.get.bind(http)
 export const post = http.post.bind(http)
 export const put = http.put.bind(http)
+export const patch = http.patch.bind(http)
 export const del = http.delete.bind(http)
 export const upload = http.upload.bind(http)
 
@@ -301,6 +322,7 @@ export default {
   get: http.get.bind(http),
   post: http.post.bind(http),
   put: http.put.bind(http),
+  patch: http.patch.bind(http),
   del: http.delete.bind(http),
   upload: http.upload.bind(http)
 }

@@ -2,11 +2,9 @@
  * 待办事项状态枚举
  */
 export enum TodoStatus {
-  NOT_STARTED = 0, // 未开始
-  IN_PROGRESS = 1, // 进行中
-  COMPLETED = 2, // 已完成
-  CANCELLED = 3, // 已取消
-  EXPIRED = 4 // 已过期
+  PENDING = 0, // 未完成
+  COMPLETED = 1, // 已完成
+  CANCELLED = 2 // 已取消
 }
 
 /**
@@ -22,14 +20,45 @@ export interface TodoItem {
 }
 
 /**
+ * 待办事项请求响应
+ */
+
+export interface TodoResponse {
+  code?: number | string
+  message?: string
+  data?: TodoPaginationResponse
+}
+
+/**
+ * 创建todo响应参数
+ */
+
+export interface CreateTodoResponse {
+  code?:  number,
+  data: TodoItem,
+  message?: string,
+  timestamp?: string
+}
+
+export interface UpdateTodoResponse {
+  code?:  number,
+  data: TodoItem,
+  message?: string,
+  timestamp?: string
+}
+
+
+
+/**
  * 待办事项分页响应
  */
 export interface TodoPaginationResponse {
-  list: TodoItem[]
+  list: TodoItem[],
   total: number
   page: number
   pageSize: number
   totalPages: number
+
 }
 
 /**

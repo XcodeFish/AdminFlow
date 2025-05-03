@@ -212,16 +212,70 @@ interface RouteItem {
 
 ### 3.1 菜单管理接口
 
-#### 3.1.1 获取菜单列表
+#### 3.1.1 查询菜单列表
 
 ```
-GET /api/v1/system/menu/list
+GET /api/v1/system/menu
 ```
 
 **请求参数：**
 
 - menuName (string, optional): 菜单名称
 - status (number, optional): 状态(0禁用 1正常)
+- page (number, optional): 页码
+- limit (number, optional): 每页记录数
+
+**响应：**
+
+```json
+{
+  "code": 200,
+  "data": {
+    "items": [
+      {
+        "id": "e4b0afc1-4354-4ca5-81af-c14354ca5b95",
+        "menuName": "系统管理",
+        "parentId": null,
+        "orderNum": 1,
+        "path": "/system",
+        "component": null,
+        "query": null,
+        "isExternal": 0,
+        "isCache": 0,
+        "menuType": "M",
+        "isVisible": 1,
+        "status": 1,
+        "perms": "system:view",
+        "icon": "Setting"
+      },
+      {
+        "id": "92b57513-5fb5-4eb9-b57f-135fb57eb942",
+        "menuName": "用户管理",
+        "parentId": "e4b0afc1-4354-4ca5-81af-c14354ca5b95",
+        "orderNum": 1,
+        "path": "user",
+        "component": "system/user/index",
+        "isExternal": 0,
+        "isCache": 1,
+        "menuType": "C",
+        "isVisible": 1,
+        "status": 1,
+        "perms": "system:user:list",
+        "icon": "User"
+      }
+    ],
+    "total": 10
+  },
+  "message": "操作成功",
+  "timestamp": "2023-01-01T12:00:00Z"
+}
+```
+
+#### 3.1.2 获取菜单树结构
+
+```
+GET /api/v1/system/menu/tree
+```
 
 **响应：**
 
@@ -236,13 +290,7 @@ GET /api/v1/system/menu/list
       "orderNum": 1,
       "path": "/system",
       "component": null,
-      "query": null,
-      "isExternal": 0,
-      "isCache": 0,
       "menuType": "M",
-      "isVisible": 1,
-      "status": 1,
-      "perms": "system:view",
       "icon": "Setting",
       "children": [
         {
@@ -252,122 +300,19 @@ GET /api/v1/system/menu/list
           "orderNum": 1,
           "path": "user",
           "component": "system/user/index",
-          "isExternal": 0,
-          "isCache": 1,
           "menuType": "C",
-          "isVisible": 1,
-          "status": 1,
-          "perms": "system:user:list",
           "icon": "User",
           "children": []
         }
       ]
     }
   ],
-  "message": "操作成功"
+  "message": "操作成功",
+  "timestamp": "2023-01-01T12:00:00Z"
 }
 ```
 
-#### 3.1.2 获取菜单详情
-
-```
-GET /api/v1/system/menu/:id
-```
-
-**响应：**
-
-```json
-{
-  "code": 200,
-  "data": {
-    "id": "92b57513-5fb5-4eb9-b57f-135fb57eb942",
-    "menuName": "用户管理",
-    "parentId": "e4b0afc1-4354-4ca5-81af-c14354ca5b95",
-    "orderNum": 1,
-    "path": "user",
-    "component": "system/user/index",
-    "query": null,
-    "isExternal": 0,
-    "isCache": 1,
-    "menuType": "C",
-    "isVisible": 1,
-    "status": 1,
-    "perms": "system:user:list",
-    "icon": "User",
-    "remark": "用户管理菜单"
-  },
-  "message": "操作成功"
-}
-```
-
-#### 3.1.3 创建菜单
-
-```
-POST /api/v1/system/menu
-```
-
-**请求体：**
-
-```json
-{
-  "menuName": "用户管理",
-  "parentId": "e4b0afc1-4354-4ca5-81af-c14354ca5b95",
-  "orderNum": 1,
-  "path": "user",
-  "component": "system/user/index",
-  "isExternal": 0,
-  "isCache": 1,
-  "menuType": "C",
-  "isVisible": 1,
-  "status": 1,
-  "perms": "system:user:list",
-  "icon": "User",
-  "remark": "用户管理菜单"
-}
-```
-
-#### 3.1.4 更新菜单
-
-```
-PUT /api/v1/system/menu/:id
-```
-
-**请求体：**
-
-```json
-{
-  "menuName": "用户管理",
-  "orderNum": 2,
-  "isVisible": 1,
-  "status": 1,
-  "icon": "UserFilled"
-}
-```
-
-#### 3.1.5 删除菜单
-
-```
-DELETE /api/v1/system/menu/:id
-```
-
-### 3.2 角色菜单分配接口
-
-```
-PUT /api/v1/system/role/:roleId/menus
-```
-
-**请求体：**
-
-```json
-{
-  "menuIds": [
-    "e4b0afc1-4354-4ca5-81af-c14354ca5b95",
-    "92b57513-5fb5-4eb9-b57f-135fb57eb942"
-  ]
-}
-```
-
-### 3.3 获取当前用户菜单接口
+#### 3.1.3 获取当前用户菜单
 
 ```
 GET /api/v1/system/menu/user
@@ -409,9 +354,225 @@ GET /api/v1/system/menu/user
     ],
     "permissions": ["system:view", "system:user:list", "system:user:query"]
   },
-  "message": "操作成功"
+  "message": "操作成功",
+  "timestamp": "2023-01-01T12:00:00Z"
 }
 ```
+
+#### 3.1.4 获取角色菜单ID列表
+
+```
+GET /api/v1/system/menu/role/:roleId
+```
+
+**路径参数：**
+
+- roleId (string, required): 角色ID
+
+**响应：**
+
+```json
+{
+  "code": 200,
+  "data": [
+    "e4b0afc1-4354-4ca5-81af-c14354ca5b95",
+    "92b57513-5fb5-4eb9-b57f-135fb57eb942"
+  ],
+  "message": "操作成功",
+  "timestamp": "2023-01-01T12:00:00Z"
+}
+```
+
+#### 3.1.5 分配角色菜单
+
+```
+POST /api/v1/system/menu/role/assign
+```
+
+**请求体：**
+
+```json
+{
+  "roleId": "fd5b9c7a-1b5e-4a76-9b5c-7a1b5e4a7698",
+  "menuIds": [
+    "e4b0afc1-4354-4ca5-81af-c14354ca5b95",
+    "92b57513-5fb5-4eb9-b57f-135fb57eb942"
+  ]
+}
+```
+
+**响应：**
+
+```json
+{
+  "code": 200,
+  "data": null,
+  "message": "分配成功",
+  "timestamp": "2023-01-01T12:00:00Z"
+}
+```
+
+#### 3.1.6 根据ID查询菜单
+
+```
+GET /api/v1/system/menu/:id
+```
+
+**路径参数：**
+
+- id (string, required): 菜单ID
+
+**响应：**
+
+```json
+{
+  "code": 200,
+  "data": {
+    "id": "92b57513-5fb5-4eb9-b57f-135fb57eb942",
+    "menuName": "用户管理",
+    "parentId": "e4b0afc1-4354-4ca5-81af-c14354ca5b95",
+    "orderNum": 1,
+    "path": "user",
+    "component": "system/user/index",
+    "query": null,
+    "isExternal": 0,
+    "isCache": 1,
+    "menuType": "C",
+    "isVisible": 1,
+    "status": 1,
+    "perms": "system:user:list",
+    "icon": "User",
+    "remark": null
+  },
+  "message": "操作成功",
+  "timestamp": "2023-01-01T12:00:00Z"
+}
+```
+
+#### 3.1.7 创建菜单
+
+```
+POST /api/v1/system/menu
+```
+
+**请求体：**
+
+```json
+{
+  "menuName": "用户管理",
+  "parentId": "e4b0afc1-4354-4ca5-81af-c14354ca5b95",
+  "orderNum": 1,
+  "path": "user",
+  "component": "system/user/index",
+  "isExternal": 0,
+  "isCache": 1,
+  "menuType": "C",
+  "isVisible": 1,
+  "status": 1,
+  "perms": "system:user:list",
+  "icon": "User",
+  "remark": "用户管理菜单"
+}
+```
+
+**响应：**
+
+```json
+{
+  "code": 200,
+  "data": {
+    "id": "92b57513-5fb5-4eb9-b57f-135fb57eb942",
+    "menuName": "用户管理",
+    "parentId": "e4b0afc1-4354-4ca5-81af-c14354ca5b95",
+    "orderNum": 1,
+    "path": "user",
+    "component": "system/user/index",
+    "isExternal": 0,
+    "isCache": 1,
+    "menuType": "C",
+    "isVisible": 1,
+    "status": 1,
+    "perms": "system:user:list",
+    "icon": "User",
+    "remark": "用户管理菜单",
+    "createdAt": "2023-01-01T12:00:00Z",
+    "updatedAt": "2023-01-01T12:00:00Z"
+  },
+  "message": "创建成功",
+  "timestamp": "2023-01-01T12:00:00Z"
+}
+```
+
+#### 3.1.8 更新菜单
+
+```
+PATCH /api/v1/system/menu/:id
+```
+
+**路径参数：**
+
+- id (string, required): 菜单ID
+
+**请求体：**
+
+```json
+{
+  "menuName": "用户管理",
+  "orderNum": 2,
+  "isVisible": 1,
+  "status": 1,
+  "icon": "UserFilled"
+}
+```
+
+**响应：**
+
+```json
+{
+  "code": 200,
+  "data": {
+    "id": "92b57513-5fb5-4eb9-b57f-135fb57eb942",
+    "menuName": "用户管理",
+    "parentId": "e4b0afc1-4354-4ca5-81af-c14354ca5b95",
+    "orderNum": 2,
+    "path": "user",
+    "component": "system/user/index",
+    "isExternal": 0,
+    "isCache": 1,
+    "menuType": "C",
+    "isVisible": 1,
+    "status": 1,
+    "perms": "system:user:list",
+    "icon": "UserFilled",
+    "updatedAt": "2023-01-01T12:30:00Z"
+  },
+  "message": "更新成功",
+  "timestamp": "2023-01-01T12:30:00Z"
+}
+```
+
+#### 3.1.9 删除菜单
+
+```
+DELETE /api/v1/system/menu/:id
+```
+
+**路径参数：**
+
+- id (string, required): 菜单ID
+
+**响应：**
+
+```json
+{
+  "code": 200,
+  "data": null,
+  "message": "删除成功",
+  "timestamp": "2023-01-01T12:00:00Z"
+}
+```
+
+> 注意：所有菜单管理接口均需要JWT认证，大部分管理操作需要管理员角色权限。
 
 ## 四、菜单权限与路由集成实现
 

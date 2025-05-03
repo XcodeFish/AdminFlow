@@ -140,11 +140,14 @@ const columns = [
 const fetchMenuList = async () => {
   try {
     loading.value = true
-    const response = await getMenuList(queryParams)
-    console.log('response', response)
-    const { data } = response
+    const { data } = await getMenuList(queryParams)
+    console.log('菜单列表', data);
 
-    menuList.value = data.items
+    if (!data) {
+      menuList.value = []
+      return
+    }
+    menuList.value = data.items && data.items.length ? data.items : []
 
     // 列表加载完成后，更新拖拽功能
     nextTick(() => {

@@ -121,7 +121,7 @@ const title = computed(() => {
 // 表单数据
 const formData = reactive<CreateMenuParams>({
   menuName: '',
-  parentId: props.parentId || '',
+  parentId: props.parentId || null,
   orderNum: 0,
   path: '',
   component: '',
@@ -132,7 +132,7 @@ const formData = reactive<CreateMenuParams>({
   isVisible: 1,
   status: 1,
   perms: '',
-  icon: '',
+  icon: null,
   remark: ''
 })
 

@@ -1,12 +1,19 @@
 import request from '@/utils/request'
 import {
-  MenuItem,
-  MenuTreeNode,
-  UserMenuInfo,
   CreateMenuParams,
   UpdateMenuParams,
   QueryMenuParams,
-  AssignRoleMenusParams
+  AssignRoleMenusParams,
+  // 导入所有响应类型
+  MenuListResponse,
+  MenuTreeResponse,
+  MenuResponse,
+  CreateMenuResponse,
+  UpdateMenuResponse,
+  DeleteMenuResponse,
+  UserMenuResponse,
+  RoleMenuIdsResponse,
+  AssignRoleMenusResponse
 } from '@/types/menu'
 
 /**
@@ -14,7 +21,7 @@ import {
  * @param data 菜单数据
  */
 export function createMenu(data: CreateMenuParams) {
-  return request.post<MenuItem>('/v1/system/menu', data)
+  return request.post<CreateMenuResponse>('/v1/system/menu', data)
 }
 
 /**
@@ -22,21 +29,21 @@ export function createMenu(data: CreateMenuParams) {
  * @param params 查询参数
  */
 export function getMenuList(params?: QueryMenuParams) {
-  return request.get<{ items: MenuItem[]; total: number }>('/v1/system/menu', params)
+  return request.get<MenuListResponse>('/v1/system/menu', params)
 }
 
 /**
  * 获取菜单树结构
  */
 export function getMenuTree() {
-  return request.get<MenuTreeNode[]>('/v1/system/menu/tree')
+  return request.get<MenuTreeResponse>('/v1/system/menu/tree')
 }
 
 /**
  * 获取当前用户菜单
  */
 export function getUserMenus() {
-  return request.get<UserMenuInfo[]>('/v1/system/menu/user')
+  return request.get<UserMenuResponse>('/v1/system/menu/user')
 }
 
 /**
@@ -44,7 +51,7 @@ export function getUserMenus() {
  * @param roleId 角色ID
  */
 export function getRoleMenuIds(roleId: string) {
-  return request.get<string[]>(`/v1/system/menu/role/${roleId}`)
+  return request.get<RoleMenuIdsResponse>(`/v1/system/menu/role/${roleId}`)
 }
 
 /**
@@ -52,7 +59,7 @@ export function getRoleMenuIds(roleId: string) {
  * @param data 角色菜单数据
  */
 export function assignRoleMenus(data: AssignRoleMenusParams) {
-  return request.post<void>('/v1/system/menu/role/assign', data)
+  return request.post<AssignRoleMenusResponse>('/v1/system/menu/role/assign', data)
 }
 
 /**
@@ -60,7 +67,7 @@ export function assignRoleMenus(data: AssignRoleMenusParams) {
  * @param id 菜单ID
  */
 export function getMenuById(id: string) {
-  return request.get<MenuItem>(`/v1/system/menu/${id}`)
+  return request.get<MenuResponse>(`/v1/system/menu/${id}`)
 }
 
 /**
@@ -69,7 +76,7 @@ export function getMenuById(id: string) {
  * @param data 菜单数据
  */
 export function updateMenu(id: string, data: UpdateMenuParams) {
-  return request.put<MenuItem>(`/v1/system/menu/${id}`, data)
+  return request.patch<UpdateMenuResponse>(`/v1/system/menu/${id}`, data)
 }
 
 /**
@@ -77,5 +84,5 @@ export function updateMenu(id: string, data: UpdateMenuParams) {
  * @param id 菜单ID
  */
 export function deleteMenu(id: string) {
-  return request.del<void>(`/v1/system/menu/${id}`)
+  return request.del<DeleteMenuResponse>(`/v1/system/menu/${id}`)
 }

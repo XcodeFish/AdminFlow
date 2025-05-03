@@ -8,6 +8,8 @@ import {
   Param,
   Query,
   UseGuards,
+  Request,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -33,8 +35,9 @@ export class TodoController {
   @ApiOperation({ summary: '创建待办事项' })
   @ApiResponse({ status: 201, description: '创建成功' })
   create(
-    @CurrentUser('id') userId: string,
     @Body() createTodoDto: CreateTodoDto,
+    @CurrentUser('userId') userId: string,
+    @Request() req: any,
   ) {
     return this.todoService.create(userId, createTodoDto);
   }
@@ -43,7 +46,7 @@ export class TodoController {
   @ApiOperation({ summary: '获取待办事项列表' })
   @ApiResponse({ status: 200, description: '获取成功' })
   findAll(
-    @CurrentUser('id') userId: string,
+    @CurrentUser('userId') userId: string,
     @Query() queryTodoDto: QueryTodoDto,
   ) {
     return this.todoService.findAll(userId, queryTodoDto);
@@ -53,7 +56,7 @@ export class TodoController {
   @ApiOperation({ summary: '更新待办事项状态' })
   @ApiResponse({ status: 200, description: '更新成功' })
   updateStatus(
-    @CurrentUser('id') userId: string,
+    @CurrentUser('userId') userId: string,
     @Param('id') id: string,
     @Body() updateTodoStatusDto: UpdateTodoStatusDto,
   ) {
@@ -63,7 +66,7 @@ export class TodoController {
   @Delete(':id/delete')
   @ApiOperation({ summary: '删除待办事项' })
   @ApiResponse({ status: 200, description: '删除成功' })
-  remove(@CurrentUser('id') userId: string, @Param('id') id: string) {
+  remove(@CurrentUser('userId') userId: string, @Param('id') id: string) {
     return this.todoService.remove(userId, id);
   }
 }

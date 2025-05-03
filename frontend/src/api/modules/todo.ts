@@ -1,10 +1,11 @@
 import request from '@/utils/request'
 import {
   TodoItem,
-  TodoPaginationResponse,
+  CreateTodoResponse,
   CreateTodoParams,
   UpdateTodoStatusParams,
-  QueryTodoParams
+  QueryTodoParams,
+  TodoResponse,
 } from '@/types/todo'
 
 /**
@@ -14,7 +15,7 @@ import {
  */
 
 export const createTodo = (data: CreateTodoParams) => {
-  return request.post<TodoItem>('/v1/todo/create', data)
+  return request.post<CreateTodoResponse>('/v1/todos/create', data)
 }
 
 /**
@@ -24,7 +25,7 @@ export const createTodo = (data: CreateTodoParams) => {
  */
 
 export const getTodoList = (params?: QueryTodoParams) => {
-  return request.get<TodoPaginationResponse>('/v1/todo/list', { params })
+  return request.get<TodoResponse>('/v1/todos/list', { params })
 }
 
 /**
@@ -33,7 +34,7 @@ export const getTodoList = (params?: QueryTodoParams) => {
  * @param data 更新数据
  */
 export const updateTodoStatus = (id: string, data: UpdateTodoStatusParams) => {
-  return request.put<TodoItem>(`/v1/todo/${id}/update`, data)
+  return request.patch<CreateTodoResponse>(`/v1/todos/${id}/update`, data)
 }
 
 /**
@@ -41,5 +42,5 @@ export const updateTodoStatus = (id: string, data: UpdateTodoStatusParams) => {
  * @param id 待办事项id
  */
 export const deleteTodo = (id: string) => {
-  return request.del<TodoItem>(`/v1/todo/${id}/delete`)
+  return request.del<TodoItem>(`/v1/todos/${id}/delete`)
 }

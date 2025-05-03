@@ -7,7 +7,7 @@ export class CreateTodoDto {
     example: '完成用户模块开发',
   })
   @IsNotEmpty({ message: '内容不能为空' })
-  @Length(1, 200, { message: '内容长度为2-100个字符' })
+  @Length(2, 100, { message: '内容长度为2-100个字符' })
   content: string;
 
   @ApiProperty({

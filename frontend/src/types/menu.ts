@@ -61,7 +61,7 @@ export interface UserMenuInfo {
  */
 export interface CreateMenuParams {
   menuName: string
-  parentId?: string
+  parentId?: string | null
   orderNum?: number
   path?: string
   component?: string
@@ -72,7 +72,7 @@ export interface CreateMenuParams {
   isVisible?: number
   status?: number
   perms?: string
-  icon?: string
+  icon?: string | null
   remark?: string
 }
 
@@ -99,4 +99,100 @@ export interface QueryMenuParams {
 export interface AssignRoleMenusParams {
   roleId: string
   menuIds: string[]
+}
+
+/**
+ * 菜单列表响应
+ */
+export interface MenuListResponse {
+  code?: number
+  message?: string
+  data: {
+    items: MenuItem[]
+    total: number
+  }
+  timestamp?: string
+}
+
+/**
+ * 菜单树响应
+ */
+export interface MenuTreeResponse {
+  code?: number
+  message?: string
+  data: MenuTreeNode[]
+  timestamp?: string
+}
+
+/**
+ * 单个菜单响应
+ */
+export interface MenuResponse {
+  code?: number
+  data: MenuItem
+  message?: string
+  timestamp?: string
+}
+
+/**
+ * 创建菜单响应
+ */
+export interface CreateMenuResponse {
+  code?: number
+  data: MenuItem
+  message?: string
+  timestamp?: string
+}
+
+/**
+ * 更新菜单响应
+ */
+export interface UpdateMenuResponse {
+  code?: number
+  data: MenuItem
+  message?: string
+  timestamp?: string
+}
+
+/**
+ * 删除菜单响应
+ */
+export interface DeleteMenuResponse {
+  code?: number
+  data: null
+  message?: string
+  timestamp?: string
+}
+
+/**
+ * 用户菜单权限响应
+ */
+export interface UserMenuResponse {
+  code?: number
+  data: {
+    menus: UserMenuInfo[]
+    permissions: string[]
+  }
+  message?: string
+  timestamp?: string
+}
+
+/**
+ * 角色菜单ID列表响应
+ */
+export interface RoleMenuIdsResponse {
+  code?: number
+  data: string[]
+  message?: string
+  timestamp?: string
+}
+
+/**
+ * 角色菜单分配响应
+ */
+export interface AssignRoleMenusResponse {
+  code?: number
+  data: null
+  message?: string
+  timestamp?: string
 }
