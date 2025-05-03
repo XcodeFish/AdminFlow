@@ -142,8 +142,9 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useUserStore } from '@/store/modules/user'
-import { getDashboardStats, getUserGrowthTrend, getUserDistribution, getTodoList, updateTodoStatus as updateTodoApi, addTodoItem } from '@/api/modules/dashboard'
+import { getDashboardStats, getUserGrowthTrend, getUserDistribution, updateTodoStatus as updateTodoApi, addTodoItem } from '@/api/modules/dashboard'
 import { TodoItem, TodoItemForm } from '@/types/dashboard'
+import { QueryTodoParams, TodoStatus, CreateTodoParams, UpdateTodoStatusParams } from '@/types/todo'
 import { ElMessage, FormInstance } from 'element-plus'
 import * as echarts from 'echarts'
 import { useRouter } from 'vue-router'

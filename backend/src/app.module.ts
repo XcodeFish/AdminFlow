@@ -27,6 +27,7 @@ import { ToolModule } from './modules/tool/tool.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { MenuModule } from './modules/menu/menu.module';
+import { TodoModule } from './modules/todo/todo.module';
 
 // 配置
 import appConfig from './configs/app.config';
@@ -98,6 +99,7 @@ import jwtConfig from './configs/jwt.config';
     ToolModule,
     PermissionModule,
     MenuModule,
+    TodoModule,
   ],
   providers: [
     // JWT策略
