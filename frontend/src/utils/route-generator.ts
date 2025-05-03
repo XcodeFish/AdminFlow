@@ -3,8 +3,9 @@
  */
 import type { RouteRecordRaw } from 'vue-router'
 import type { MenuTreeNode } from '@/types/menu'
-import { Layout, EmptyLayout, IFrameLayout } from '@/utils/import-layout'
+import { Layout, EmptyLayout, IFrameLayout } from './import-layout'
 import { getComponentByPath } from '@/utils/component-map'
+import { validateComponent } from '@/utils/component-validator'
 
 // 预定义布局组件映射
 const LayoutMap: Record<string, any> = {
@@ -12,6 +13,11 @@ const LayoutMap: Record<string, any> = {
   ParentView: Layout,
   EmptyLayout: EmptyLayout,
   IFrameLayout: IFrameLayout
+}
+
+// 将接口声明改为类型交集
+export type CustomRouteRecord = RouteRecordRaw & {
+  parentName?: string;
 }
 
 // 已处理过的路由路径集合，用于防止重复处理
@@ -81,8 +87,12 @@ export const resetRouteProcessingState = (): void => {
  * @param menus 菜单树数据
  * @returns 路由配置数组
  */
-export const transformMenuToRoutes = (menus: MenuTreeNode[]): RouteRecordRaw[] => {
-  const routes: RouteRecordRaw[] = []
+export const transformMenuToRoutes = (
+  menus: MenuTreeNode[],
+  parentPath: string = '',
+  parentRouteName: string = ''
+): CustomRouteRecord[] => {
+  const routes: CustomRouteRecord[] = []
   console.log('🚩 开始转换菜单到路由，菜单数量:', menus.length)
 
   menus.forEach((menu) => {
@@ -93,28 +103,52 @@ export const transformMenuToRoutes = (menus: MenuTreeNode[]): RouteRecordRaw[] =
       }
 
       // 构建路径
-      const routePath = menu.path || `/${menu.id}`
+      let routePath = menu.path || `/${menu.id}`
 
-      // 防止重复处理相同路径，避免无限循环
-      if (processedPaths.has(routePath)) {
-        console.warn(`⚠️ 检测到重复路径，跳过处理: ${routePath}`)
+      // 如果是子菜单且不以/开头，将其附加到父路径
+      if (parentPath && menu.menuType === 'C' && !routePath.startsWith('/')) {
+        routePath = `${parentPath}/${routePath}`.replace(/\/+/g, '/')
+      }
+
+      // 避免重复的路由路径
+      const existingRouteIndex = routes.findIndex((r) => r.path === routePath)
+      if (existingRouteIndex >= 0) {
+        console.warn(`⚠️ 路由路径重复: ${routePath}, 已跳过`)
         return
       }
       processedPaths.add(routePath)
 
       // 构建路由对象
-      const route: RouteRecordRaw = {
+      const route = {
         path: routePath,
         name: generateRouteName(menu.menuName, menu.id),
         component: resolveComponent(menu.menuType === 'M' ? 'Layout' : menu.component),
+        children: [],
         meta: {
           title: menu.menuName,
-          icon: menu.icon,
+          icon: menu.icon ?? undefined,
           // 如果是目录类型，总是显示（即使只有一个子菜单）
           alwaysShow: menu.menuType === 'M',
           // 默认路由需要认证
           requiresAuth: true
         }
+      } as CustomRouteRecord
+
+      // 在这里添加组件存在性检查代码
+      if (menu.component && menu.menuType === 'C') {
+        const componentExists = validateComponent(menu.component)
+        route.meta.componentExists = componentExists
+
+        if (!componentExists) {
+          console.warn(`⚠️ 组件不存在: ${menu.component}，用户访问时将导向404`)
+          // 可选：直接设置特殊组件进行提示
+          // route.component = NotFoundComponent
+        }
+      }
+
+      // 对于菜单类型的路由，正确设置其父路由
+      if (parentPath && menu.menuType === 'C') {
+        route.parentName = parentRouteName
       }
 
       // 处理子路由
@@ -123,7 +157,9 @@ export const transformMenuToRoutes = (menus: MenuTreeNode[]): RouteRecordRaw[] =
         const validChildren = menu.children.filter((child) => child.menuType !== 'F')
 
         if (validChildren.length > 0) {
-          route.children = transformMenuToRoutes(validChildren)
+           const routeName = String(route.name)
+          route.children = transformMenuToRoutes(validChildren, route.path, routeName)
+          // route.children = transformMenuToRoutes(validChildren)
 
           // 如果是目录并且有子路由，将第一个子路由设为重定向目标
           if (menu.menuType === 'M' && route.children.length > 0) {
@@ -133,7 +169,7 @@ export const transformMenuToRoutes = (menus: MenuTreeNode[]): RouteRecordRaw[] =
         }
       }
 
-      console.log(`🚩 生成路由: ${route.path} (${route.name})`, route)
+      console.log(`🚩 生成路由: ${route.path} (${String(route.name)})`, route)
       routes.push(route)
     } catch (error) {
       console.error('🚨 处理菜单时出错:', error, menu)

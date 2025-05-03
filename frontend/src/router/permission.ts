@@ -5,6 +5,7 @@ import type { Router, RouteLocationNormalized } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { usePermissionStore } from '@/store/modules/permission'
 import { autoRefreshToken } from '@/utils/auth-helper'
+import type { CustomRouteRecord } from '@/utils/route-generator'
 import { errorRoutes } from './routes'
 // import { useUIStore } from '@/store/modules/ui';
 
@@ -120,9 +121,33 @@ export function setupRouterGuard(router: Router) {
             const beforeCount = router.getRoutes().length
 
             // 添加动态路由
-            routes.forEach((route) => {
-              router.addRoute(route)
-              console.log(`🚩 添加路由: ${route.path} (${String(route.name)})`)
+            // routes.forEach((route) => {
+            //   router.addRoute(route)
+            //   console.log(`🚩 添加路由: ${route.path} (${String(route.name)})`)
+            // })
+            // 分离父路由和子路由
+            const parentRoutes = routes.filter((route: CustomRouteRecord) => !route.parentName)
+            const childRoutes = routes.filter((route: CustomRouteRecord) => route.parentName)
+
+            console.log('🚩 父路由:', parentRoutes)
+            console.log('🚩 子路由:', childRoutes)
+
+            // 先添加所有父级路由
+            parentRoutes.forEach((route: CustomRouteRecord) => {
+              const { parentName, ...routeConfig } = route // 移除parentName属性
+              router.addRoute(routeConfig)
+              console.log(`🚩 添加父路由: ${route.path} (${String(route.name)})`)
+            })
+
+            // 再添加所有子路由
+            childRoutes.forEach((route: CustomRouteRecord) => {
+              const { parentName, ...routeConfig } = route // 移除parentName属性
+              if (parentName) {
+                router.addRoute(parentName, routeConfig)
+                console.log(
+                  `🚩 添加子路由: ${route.path} (${String(route.name)}) -> 父路由: ${parentName}`
+                )
+              }
             })
 
             // 添加错误路由
@@ -136,6 +161,12 @@ export function setupRouterGuard(router: Router) {
             // 记录添加后的路由数量
             const afterCount = router.getRoutes().length
             console.log(`🚩 路由添加完成，路由总数从 ${beforeCount} 增加到 ${afterCount}`)
+
+            // 在这里添加代码查看路由详情
+            console.log(
+              '📍 所有注册的路由:',
+              router.getRoutes().map((r) => ({ path: r.path, name: r.name }))
+            )
 
             // 设置路由已添加标志
             permissionStore.setDynamicRouteAdded(true)
@@ -188,6 +219,13 @@ export function setupRouterGuard(router: Router) {
       }
     }
 
+    // 检查组件是否存在
+    if (to.meta.componentExists === false) {
+      console.warn(`⚠️ 访问不存在的组件路由: ${to.path}`)
+      redirectsCount.clear()
+      return next('/404')
+    }
+
     // 允许访问
     redirectsCount.clear() // 导航成功，清除重定向计数
     return next()
@@ -219,22 +257,6 @@ function updatePageTitle(to: RouteLocationNormalized): void {
   document.title = title
   console.log(`🚩 页面标题已更新: ${title}`)
 }
-
-// 检查UI库是否已选择
-/*
-async function checkUILibrary(to: RouteLocationNormalized): Promise<boolean> {
-  const uiStore = useUIStore();
-  const savedUI = localStorage.getItem('ui-library');
-
-  // 如果已保存UI选择但状态未初始化，更新状态
-  if (savedUI && !uiStore.initialized) {
-    uiStore.initialized = true;
-  }
-
-  // 仅当没有UI选择且不在白名单时才需要跳转到选择页面
-  return !savedUI && !WHITE_LIST.includes(to.path);
-}
-*/
 
 /**
  * 检查用户认证状态

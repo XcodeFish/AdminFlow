@@ -3,6 +3,10 @@
  * 解决Vite中动态导入的问题，提供静态导入映射
  */
 
+import { getDynamicComponent } from './dynamic-component-loader'
+import { StaticComponentMap } from './static-component-map'
+import NotFoundComponent  from '@/views/error/404.vue'
+
 // 定义组件函数类型
 type ComponentImport = () => Promise<any>
 // 定义组件映射类型
@@ -86,3 +90,23 @@ export function getComponentByPath(path: string | null, defaultComponent: any): 
 
   return defaultComponent
 }
+
+// export function getComponentByPath(path: string): any {
+//   const normalizedPath = normalizeComponentPath(path)
+
+//   // 先检查静态映射
+//   if (StaticComponentMap[normalizedPath]) {
+//     return StaticComponentMap[normalizedPath]
+//   }
+
+//   // 再尝试动态加载
+//   const dynamicComponent = getDynamicComponent(normalizedPath)
+//   if (dynamicComponent) {
+//     console.log(`🔄 动态加载组件: ${normalizedPath}`)
+//     return dynamicComponent
+//   }
+
+//   // 都找不到，返回404组件
+//   console.warn(`⚠️ 组件不存在: ${normalizedPath}`)
+//   return NotFoundComponent
+// }
