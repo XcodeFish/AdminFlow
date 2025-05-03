@@ -120,7 +120,7 @@ export interface MenuListResponse {
 export interface MenuTreeResponse {
   code?: number
   message?: string
-  data: MenuTreeNode[]
+  data:MenuTreeNode[],
   timestamp?: string
 }
 

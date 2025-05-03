@@ -121,7 +121,7 @@ const title = computed(() => {
 // 表单数据
 const formData = reactive<CreateMenuParams>({
   menuName: '',
-  parentId: props.parentId || null,
+  parentId: props.parentId ?? '',
   orderNum: 0,
   path: '',
   component: '',
@@ -191,7 +191,7 @@ watch(() => props.menu, (val) => {
     // 新增模式，重置表单
     formRef.value?.resetFields()
     formData.menuType = 'M'
-    formData.parentId = props.parentId || ''
+    formData.parentId = props.parentId ?? ''
     formData.orderNum = 0
     formData.isExternal = 0
     formData.isCache = 0
@@ -216,6 +216,8 @@ const handleMenuTypeChange = (value: 'M' | 'C' | 'F') => {
 const fetchMenuTree = async () => {
   try {
     const { data } = await getMenuTree()
+    console.log('获取菜单树成功', data)
+
     menuOptions.value = data || [] // 确保即使返回空值也能正确处理
   } catch (error) {
     console.error('获取菜单树失败', error)
@@ -307,7 +309,7 @@ const filteredMenuOptions = computed(() => {
   }
 
   return filteredOptions
-});
+})
 
 onMounted(() => {
   fetchMenuTree()

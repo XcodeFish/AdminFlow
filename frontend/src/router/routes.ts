@@ -1,6 +1,10 @@
 import type { RouteRecordRaw } from 'vue-router'
+import { Layout } from '@/utils/import-layout'
 
-// 静态路由（不需要权限，所有用户都可以访问）
+/**
+ * 静态路由（不需要权限，所有用户都可以访问）
+ * 包括登录页面、错误页面等
+ */
 export const constantRoutes: Array<RouteRecordRaw> = [
   {
     path: '/login',
@@ -8,26 +12,6 @@ export const constantRoutes: Array<RouteRecordRaw> = [
     component: () => import('@/views/login/index.vue'),
     meta: { title: '登录', requiresAuth: false }
   },
-  // {
-  //   path: '/social-callback',
-  //   name: 'SocialCallback',
-  //   component: () => import('@/views/auth/social-callback.vue'),
-  //   meta: { title: '第三方登录', requiresAuth: false }
-  // },
-  // {
-  //   path: '/auth',
-  //   name: 'Auth',
-  //   component: () => import('@/layouts/index.vue'),
-  //   meta: { hidden: true, requiresAuth: false },
-  //   children: [
-  //     {
-  //       path: 'forgot-password',
-  //       name: 'ForgotPassword',
-  //       component: () => import('@/views/auth/forgot-password.vue'),
-  //       meta: { title: '忘记密码', requiresAuth: false }
-  //     }
-  //   ]
-  // },
   {
     path: '/403',
     name: 'Forbidden',
@@ -45,12 +29,18 @@ export const constantRoutes: Array<RouteRecordRaw> = [
     name: 'ServerError',
     component: () => import('@/views/error/500.vue'),
     meta: { title: '服务器错误', requiresAuth: false }
-  },
-  // 主布局和基础路由
+  }
+]
+
+/**
+ * 基础路由配置 - 会在动态路由加载前添加
+ * 包括布局和仪表盘等默认页面
+ */
+export const basicRoutes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'Layout',
-    component: () => import('@/layout/index.vue'),
+    component: Layout,
     redirect: '/dashboard',
     children: [
       // 仪表盘
@@ -66,59 +56,18 @@ export const constantRoutes: Array<RouteRecordRaw> = [
         }
       }
     ]
-  },
-  // 系统管理（单独一个主路由）
-  {
-    path: '/system',
-    name: 'System',
-    component: () => import('@/layout/index.vue'),
-    redirect: '/system/menu',
-    meta: {
-      title: '系统管理',
-      icon: 'Setting',
-      requiresAuth: true
-    },
-    children: [
-      {
-        path: 'menu',
-        name: 'Menu',
-        component: () => import('@/views/system/menu/index.vue'),
-        meta: {
-          title: '菜单管理',
-          icon: 'Menu',
-          requiresAuth: true
-        }
-      },
-      // 添加测试路由
-      {
-        path: 'test',
-        name: 'SystemTest',
-        component: () => import('@/views/system/test.vue'),
-        meta: {
-          title: '测试页面',
-          icon: 'Tools',
-          requiresAuth: true
-        }
-      }
-    ]
   }
 ]
 
-// 动态路由（需要根据用户权限动态添加）
-export const asyncRoutes: Array<RouteRecordRaw> = [
-  // 个人中心
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: () => import('@/layout/index.vue'),
-    redirect: '/profile/index',
-    meta: { hidden: true },
-    children: []
-  },
-
+/**
+ * 错误路由配置 - 始终放在最后
+ * 用于处理未匹配的路由请求
+ */
+export const errorRoutes: Array<RouteRecordRaw> = [
   // 匹配所有未定义的路由，必须放在最后
   {
     path: '/:pathMatch(.*)*',
+    name: 'NotFoundRedirect',
     redirect: '/404',
     meta: { hidden: true }
   }

@@ -47,6 +47,18 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }
 
+// 将路由实例挂载到window对象，方便在非Vue组件中访问
+// 例如在权限存储模块中使用
+declare global {
+  interface Window {
+    $router: typeof router
+  }
+}
+
+// 挂载路由实例
+window.$router = router
+console.log('🚩 路由实例已挂载到window.$router')
+
 const userStore = useUserStore()
 if (userStore.shouldAutoLogin) {
   userStore.checkAutoLogin()

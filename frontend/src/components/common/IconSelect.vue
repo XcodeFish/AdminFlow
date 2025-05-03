@@ -1,87 +1,117 @@
 <template>
-  <div class="icon-select">
-    <el-input v-model="selectedIcon" :placeholder="placeholder" :disabled="disabled" :clearable="clearable"
-      @click="showDialog = true">
+  <div class="icon-selector">
+    <el-input v-model="searchTerm" placeholder="搜索图标" class="icon-search">
       <template #prefix>
-        <component :is="resolvedIcon" v-if="selectedIcon" />
-        <i v-else class="el-icon-plus"></i>
+        <el-icon>
+          <Search />
+        </el-icon>
       </template>
     </el-input>
-
-    <el-dialog title="选择图标" v-model="showDialog" width="780px" append-to-body>
-      <div class="icon-grid">
-        <div v-for="icon in iconList" :key="icon.name" class="icon-item" :class="{ active: selectedIcon === icon.name }"
-          @click="handleSelectIcon(icon.name)">
-          <component :is="icon.component" />
-          <span class="icon-name">{{ icon.name }}</span>
-        </div>
+    <div v-if="selectedIcon" class="selected-icon">
+      <el-tag closable @close="clearSelection">
+        <el-icon>
+          <component :is="selectedIcon" />
+        </el-icon>
+        <span class="icon-name">{{ selectedIcon }}</span>
+      </el-tag>
+    </div>
+    <div class="icons-container">
+      <div v-for="icon in filteredIcons" :key="icon" @click="selectIcon(icon)" class="icon-item"
+        :class="{ active: selectedIcon === icon }">
+        <el-icon>
+          <component :is="icon" />
+        </el-icon>
+        <span class="icon-name">{{ icon }}</span>
       </div>
-    </el-dialog>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import * as ElementPlusIcons from '@element-plus/icons-vue'
+import { ref, computed, watch } from 'vue'
+import { Search } from '@element-plus/icons-vue'
+import * as Icons from '@element-plus/icons-vue' // 导入所有图标
 
-const props = withDefaults(defineProps<{
+// 获取所有图标名称
+const iconNames = Object.keys(Icons)
+
+// 组件属性
+const props = defineProps<{
   modelValue: string | null
-  placeholder?: string
-  disabled?: boolean
-  clearable?: boolean
-}>(), {
-  placeholder: '点击选择图标',
-  disabled: false,
-  clearable: true
-})
-
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: string | null): void
-  (e: 'change', value: string | null): void
 }>()
 
-const showDialog = ref(false)
+// 组件事件
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string | null): void
+}>()
 
+// 搜索关键字
+const searchTerm = ref('')
+
+// 当前选择的图标
 const selectedIcon = computed({
   get: () => props.modelValue,
-  set: (val) => {
-    emit('update:modelValue', val)
-    emit('change', val)
+  set: (value: string | null) => {
+    emit('update:modelValue', value)
   }
 })
 
-// 解析已选图标
-const resolvedIcon = computed(() => {
-  if (!selectedIcon.value) return null
-  return (ElementPlusIcons as Record<string, any>)[selectedIcon.value] || null
-})
-
-// 图标列表
-const iconList = computed(() => {
-  return Object.entries(ElementPlusIcons).map(([name, component]) => ({
-    name,
-    component
-  }))
+// 过滤后的图标列表
+const filteredIcons = computed(() => {
+  if (!searchTerm.value) {
+    return iconNames
+  }
+  return iconNames.filter(name =>
+    name.toLowerCase().includes(searchTerm.value.toLowerCase())
+  )
 })
 
 // 选择图标
-const handleSelectIcon = (iconName: string) => {
+const selectIcon = (iconName: string) => {
   selectedIcon.value = iconName
-  showDialog.value = false
 }
+
+// 清除选择
+const clearSelection = () => {
+  selectedIcon.value = null
+}
+
+// 监听modelValue变化
+watch(() => props.modelValue, (val) => {
+  if (val && !iconNames.includes(val)) {
+    console.warn(`Icon "${val}" does not exist in Element Plus icons`)
+  }
+})
 </script>
 
 <style lang="scss" scoped>
-.icon-select {
+.icon-selector {
   width: 100%;
 }
 
-.icon-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 12px;
-  max-height: 500px;
+.icon-search {
+  margin-bottom: 10px;
+}
+
+.selected-icon {
+  margin-bottom: 10px;
+
+  .el-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+}
+
+.icons-container {
+  height: 200px;
   overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  padding: 10px;
 }
 
 .icon-item {
@@ -89,13 +119,13 @@ const handleSelectIcon = (iconName: string) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 15px 5px;
   cursor: pointer;
+  padding: 8px;
   border-radius: 4px;
   transition: all 0.3s;
 
   &:hover {
-    background-color: #f0f9ff;
+    background-color: #f5f7fa;
   }
 
   &.active {
@@ -103,13 +133,19 @@ const handleSelectIcon = (iconName: string) => {
     color: #409eff;
   }
 
+  .el-icon {
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+
   .icon-name {
-    margin-top: 8px;
     font-size: 12px;
-    white-space: nowrap;
+    word-break: break-all;
+    text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%;
+    white-space: nowrap;
+    width: 100%;
   }
 }
 </style>

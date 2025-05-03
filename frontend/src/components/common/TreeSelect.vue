@@ -19,7 +19,7 @@ interface TreeOption {
 }
 
 const props = withDefaults(defineProps<{
-  modelValue: string
+  modelValue: string | null
   data: TreeNode[]
   labelKey?: string
   valueKey?: string
@@ -34,13 +34,13 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
-  (e: 'change', value: string): void
+  (e: 'update:modelValue', value: string | null): void
+  (e: 'change', value: string | null): void
 }>()
 
 const selectedValue = computed({
   get: () => props.modelValue,
-  set: (val: string) => emit('update:modelValue', val)
+  set: (val: string | null) => emit('update:modelValue', val)
 })
 
 // 将树形结构扁平化为选项数组
@@ -74,7 +74,7 @@ const normalizedOptions = computed(() => {
   return result
 })
 
-const handleChange = (value: string) => {
+const handleChange = (value: string | null) => {
   emit('change', value)
 }
 
