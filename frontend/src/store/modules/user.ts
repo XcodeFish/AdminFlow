@@ -1,13 +1,14 @@
 // frontend/src/store/modules/user.ts
 import { defineStore } from 'pinia'
-import { UserInfo, LoginParams, LoginResponse } from '@/types/auth'
+import { LoginParams } from '@/types/auth'
+import { User } from '@/types/user'
 import request from '@/utils/request'
-import { login } from '@/api/modules/auth'
+import { login, logout } from '@/api/modules/auth'
 import { usePermissionStore } from '@/store/modules/permission'
 
 interface UserState {
   token: string | null
-  userInfo: UserInfo
+  userInfo: User
   isLoggedIn: boolean
   rememberMe: boolean
   roles: string[] // 用户角色key列表
@@ -70,10 +71,8 @@ export const useUserStore = defineStore('user', {
       try {
         const response = await login(loginParams)
         console.log('登录响应数据:', response)
-
-        // 假设后端返回的格式是 { code: 200, data: { accessToken, userInfo } }
         // 提取token
-        const accessToken = response.data?.accessToken || response.accessToken || response.token
+        const accessToken = response.data.accessToken
 
         if (!accessToken) {
           throw new Error('登录失败：未获取到token')
@@ -83,16 +82,20 @@ export const useUserStore = defineStore('user', {
         this.setToken(accessToken)
         this.setRememberMe(loginParams.rememberMe || false)
 
+        // 保存token过期时间，用于自动更新处理
+        const expiresIn = response.data.expiresIn
+        if (expiresIn) {
+          const expiryTime = Date.now() + expiresIn * 1000
+          localStorage.setItem('token_expiry', expiryTime.toString())
+        }
+
         // 提取用户信息
-        const userInfo = response.data?.userInfo || response.userInfo || {}
-        console.log('获取到的用户信息:', userInfo)
+        const userInfo = response.data.userInfo
         this.userInfo = userInfo
 
         // 提取角色和权限信息
         if (userInfo.roles && Array.isArray(userInfo.roles)) {
           this.roles = userInfo.roles.map((role: any) => role.roleKey || role)
-        } else if (response.data?.roles) {
-          this.roles = response.data.roles
         } else {
           // 如果没有角色信息，默认设置一个基础角色，确保可以访问基础页面
           this.roles = ['user']
@@ -130,7 +133,7 @@ export const useUserStore = defineStore('user', {
     async logoutAction(): Promise<void> {
       try {
         // 尝试调用登出接口
-        await request.post('/auth/logout')
+        await logout()
       } catch (error) {
         console.error('登出接口调用失败:', error)
         // 即使接口调用失败，也继续执行登出流程
@@ -140,6 +143,15 @@ export const useUserStore = defineStore('user', {
         this.userInfo = {}
         this.roles = []
         this.permissions = []
+
+        // 清除token过期时间
+        localStorage.removeItem('token_expiry')
+
+        // 如果用户没有选择记住我，也清除rememberMe状态
+        if (!this.rememberMe) {
+          localStorage.removeItem('remember')
+          this.rememberMe = false
+        }
 
         // 重置权限存储
         const permissionStore = usePermissionStore()

@@ -1,9 +1,9 @@
-// frontend/src/types/auth.ts
+import { User } from './user'
+import { ApiResponse } from './api'
+
 export interface LoginParams {
   username: string
   password: string
-  // captcha?: string
-  // captchaId?: string
   rememberMe?: boolean
 }
 
@@ -11,29 +11,21 @@ export interface LoginResponse {
   accessToken: string
   tokenType: string
   expiresIn: number
-  userInfo: UserInfo
+  userInfo: User
 }
 
-export interface UserInfo {
-  id?: string | number
-  username?: string
-  nickname?: string
-  realName?: string
-  email?: string
-  phone?: string
-  gender?: number
-  avatar?: string
-  status?: number
-  deptId?: number
-  roles?: {
-    id: number
-    roleName: string
-    roleKey: string
-    orderNum: number
-    remark?: string
-    dataScope: number
-    status: number
-  }[]
-  createdAt?: string
-  lastLoginTime?: string
+export interface RefreshTokenParams {
+  refreshToken: string
 }
+
+export interface RefreshTokenResponse {
+  accessToken: string
+  tokenType: string
+  expiresIn: number
+  refreshToken: string
+}
+
+// API 响应类型定义
+export type LoginApiResponse = ApiResponse<LoginResponse>
+export type RefreshTokenApiResponse = ApiResponse<RefreshTokenResponse>
+export type LogoutApiResponse = ApiResponse<null>

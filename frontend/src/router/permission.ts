@@ -4,6 +4,7 @@ import 'nprogress/nprogress.css'
 import type { Router, RouteLocationNormalized } from 'vue-router'
 import { useUserStore } from '@/store/modules/user'
 import { usePermissionStore } from '@/store/modules/permission'
+import { autoRefreshToken } from '@/utils/auth-helper'
 // import { useUIStore } from '@/store/modules/ui';
 
 const WHITE_LIST = ['/login', '/social-callback', '/403', '/404', '/500', '/auth/forgot-password']
@@ -53,6 +54,9 @@ export function setupRouterGuard(router: Router) {
     if (permissionResult) {
       return next(permissionResult)
     }
+
+    // 检查并自动刷新token
+    await autoRefreshToken()
 
     next()
   })

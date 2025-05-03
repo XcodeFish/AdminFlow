@@ -4,7 +4,6 @@ import { RouteRecordRaw } from 'vue-router'
 import { asyncRoutes, constantRoutes } from '@/router/routes'
 import { useUserStore } from './user'
 import { getUserMenus } from '@/api/modules/menu'
-import { UserMenuInfo } from '@/types/menu'
 
 interface PermissionState {
   routes: RouteRecordRaw[]

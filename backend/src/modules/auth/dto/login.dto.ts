@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsNotEmpty, IsString, Length, IsBoolean, IsOptional } from 'class-validator';
 
 export class LoginDto {
   @ApiProperty({
@@ -19,4 +19,13 @@ export class LoginDto {
   @IsString({ message: '密码必须是字符串' })
   @Length(6, 100, { message: '密码长度必须在6-100个字符之间' })
   password: string;
+
+  @ApiProperty({
+    description: '是否记住登录状态',
+    example: false,
+    required: false,
+  })
+  @IsBoolean({ message: 'rememberMe必须是布尔值' })
+  @IsOptional()
+  rememberMe?: boolean;
 }

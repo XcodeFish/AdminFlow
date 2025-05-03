@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router/index'
+import { useUserStore } from './store/modules/user'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import ElementPlus from 'element-plus'
@@ -44,6 +45,11 @@ app.use(ElementPlus, { size: 'default', zIndex: 2000 })
 // 注册所有Element Plus图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
+}
+
+const userStore = useUserStore()
+if (userStore.shouldAutoLogin) {
+  userStore.checkAutoLogin()
 }
 
 // 挂载应用

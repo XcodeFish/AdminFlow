@@ -27,7 +27,7 @@ export class AuthService {
    * @returns 令牌信息
    */
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
-    const { username, password } = loginDto;
+    const { username, password, rememberMe = false } = loginDto;
 
     // 查找用户
     const user = await this.userService.findByUsername(username);
@@ -86,16 +86,28 @@ export class AuthService {
       isAdmin, // 添加管理员标记，便于验证
     };
 
-    // 生成访问令牌
-    const accessTokenExpiration = this.configService.get(
+    // 根据 rememberMe 设置不同的令牌过期时间
+    let accessTokenExpiration = this.configService.get(
       'jwt.accessTokenExpiration',
       '8h',
     );
+
+    // 如果勾选了记住我 使用长期令牌过期时间（7d)
+    if (rememberMe) {
+      accessTokenExpiration = this.configService.get(
+        'jwt.accessTokenExpiration',
+        '7d',
+      );
+    }
+
     const expiresInSeconds = this.parseExpirationToSeconds(
       accessTokenExpiration,
     );
 
-    const accessToken = this.jwtService.sign(payload);
+    // 添加过期时间到令牌选项
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: accessTokenExpiration,
+    });
 
     // 创建用户响应对象，移除敏感字段
     const userResponse = {

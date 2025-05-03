@@ -86,7 +86,7 @@ const loading = ref(false)
 const loginForm = reactive<LoginParams>({
   username: '',
   password: '',
-  // rememberMe: false
+  rememberMe: false
 })
 
 // 表单验证规则

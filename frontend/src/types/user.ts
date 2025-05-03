@@ -4,21 +4,21 @@
 
 // 用户基础信息
 export interface User {
-  id: string
-  username: string
+  id?: string
+  username?: string
   nickname?: string
   realName?: string
   email?: string
   phone?: string
-  gender: number // 0-未知，1-男，2-女
+  gender?: number // 0-未知，1-男，2-女
   avatar?: string
   remark?: string
-  status: number // 0-禁用，1-启用
+  status?: number // 0-禁用，1-启用
   deptId?: number
   lastLoginTime?: Date
-  createdAt: Date
-  updatedAt: Date
-  roles: Role[]
+  createdAt?: Date
+  updatedAt?: Date
+  roles?: Role[]
 }
 
 // 角色信息
@@ -53,15 +53,19 @@ export interface Permission {
 }
 
 // 用户查询参数
-export interface UserQuery {
+export interface UserQueryParams {
   username?: string
   realName?: string
   phone?: string
   email?: string
   status?: number
   deptId?: number
-  pageNum?: number
+  roleId?: number
+  page?: number
   pageSize?: number
+  searchKey?: string
+  orderBy?: string
+  orderType?: 'asc' | 'desc'
 }
 
 // 创建用户参数
@@ -82,7 +86,6 @@ export interface CreateUserParams {
 
 // 更新用户参数
 export interface UpdateUserParams {
-  id: string
   nickname?: string
   realName?: string
   email?: string
@@ -97,6 +100,60 @@ export interface UpdateUserParams {
 
 // 重置密码参数
 export interface ResetPasswordParams {
-  id: string
-  newPassword: string
+  password: string
+}
+
+// API响应类型定义
+export interface UserListResponse {
+  code?: number
+  message?: string
+  data: {
+    items: User[]
+    total: number
+    page: number
+    pageSize: number
+  }
+  timestamp?: string
+}
+
+export interface UserResponse {
+  code?: number
+  message?: string
+  data: User
+  timestamp?: string
+}
+
+export interface CreateUserResponse {
+  code?: number
+  message?: string
+  data: User
+  timestamp?: string
+}
+
+export interface UpdateUserResponse {
+  code?: number
+  message?: string
+  data: User
+  timestamp?: string
+}
+
+export interface DeleteUserResponse {
+  code?: number
+  message?: string
+  data: null
+  timestamp?: string
+}
+
+export interface ResetPasswordResponse {
+  code?: number
+  message?: string
+  data: null
+  timestamp?: string
+}
+
+export interface UpdateUserStatusResponse {
+  code?: number
+  message?: string
+  data: User
+  timestamp?: string
 }
