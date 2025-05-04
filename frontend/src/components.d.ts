@@ -8,6 +8,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ActionBar: typeof import('./components/common/ActionBar.vue')['default']
+    ActionImportExport: typeof import('./components/common/ActionImportExport.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElBreadcrumb: typeof import('element-plus/es')['ElBreadcrumb']
@@ -59,11 +61,18 @@ declare module 'vue' {
     PieChart: typeof import('./components/business/dashboard/PieChart.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SearchPanel: typeof import('./components/common/SearchPanel.vue')['default']
     StatCard: typeof import('./components/business/dashboard/StatCard.vue')['default']
     TimeDisplay: typeof import('./components/business/common/TimeDisplay.vue')['default']
     TodoList: typeof import('./components/business/dashboard/TodoList.vue')['default']
     TreeSelect: typeof import('./components/common/TreeSelect.vue')['default']
     TrendChart: typeof import('./components/business/dashboard/TrendChart.vue')['default']
+    UniButton: typeof import('./components/common/UniButton.vue')['default']
+    UniDialog: typeof import('./components/common/UniDialog.vue')['default']
+    UniForm: typeof import('./components/common/UniForm.vue')['default']
+    UniFormItem: typeof import('./components/common/UniFormItem.vue')['default']
+    UniPagination: typeof import('./components/common/UniPagination.vue')['default']
+    UniSwitch: typeof import('./components/common/UniSwitch.vue')['default']
     UniTable: typeof import('./components/common/UniTable.vue')['default']
   }
   export interface ComponentCustomProperties {

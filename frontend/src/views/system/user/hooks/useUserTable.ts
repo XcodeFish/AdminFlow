@@ -24,7 +24,7 @@ export default function useUserTable() {
   const fetchUserList = async () => {
     loading.value = true
     try {
-      const res = await getUserList(searchParams)
+      const res = await getUserList()
       userList.value = res.data.items
       total.value = res.data.total
     } catch (error) {

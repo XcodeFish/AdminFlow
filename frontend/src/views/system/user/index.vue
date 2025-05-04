@@ -1,175 +1,108 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-6">
-    <div class="max-w-[1440px] mx-auto bg-white rounded-lg shadow-sm">
-      <!-- 顶部操作区 -->
-      <div class="p-6 border-b border-gray-100">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4 flex-1">
-            <div class="relative flex-1 max-w-md">
-              <el-input v-model="searchParams.searchKey" placeholder="搜索用户名/ID" class="!rounded-button"
-                @keyup.enter="fetchUserList">
-                <template #prefix>
-                  <el-icon>
-                    <Search />
-                  </el-icon>
-                </template>
-              </el-input>
-            </div>
-            <el-select v-model="searchParams.status" placeholder="用户状态" class="w-32 !rounded-button"
-              @change="fetchUserList">
-              <!-- <el-option label="全部" :value=" " /> -->
-              <el-option label="启用" :value="1" />
-              <el-option label="禁用" :value="0" />
-            </el-select>
-            <el-select v-model="searchParams.roleId" placeholder="用户角色" class="w-32 !rounded-button"
-              @change="fetchUserList">
-              <!-- <el-option label="全部" :value="null" /> -->
-              <el-option v-for="role in roleOptions" :key="role.id" :label="role.roleName" :value="role.id" />
-            </el-select>
-            <el-button @click="advancedSearchVisible = true">
-              <el-icon class="mr-1">
-                <Filter />
-              </el-icon>高级筛选
-            </el-button>
-          </div>
-          <div class="flex items-center gap-2">
-            <el-button @click="handleExport" :loading="exporting">
-              <el-icon class="mr-1">
-                <Download />
-              </el-icon>导出
-            </el-button>
-            <el-button type="primary" class="ml-2 !rounded-button whitespace-nowrap" @click="handleAddUser">
-              <el-icon class="mr-1">
-                <Plus />
-              </el-icon>新增用户
-            </el-button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 数据列表 -->
-      <div class="p-6">
-        <div class="mb-2 flex items-center" v-if="selectedRows.length > 0">
-          <el-tag type="info" class="mr-2">已选择 {{ selectedRows.length }} 项</el-tag>
-          <el-button size="small" type="primary" @click="handleBatchEnable">批量启用</el-button>
-          <el-button size="small" type="warning" class="ml-2" @click="handleBatchDisable">批量禁用</el-button>
-          <el-button size="small" type="danger" class="ml-2" @click="handleBatchDelete">批量删除</el-button>
-        </div>
-
-        <el-table :data="userList" stripe style="width: 100%" v-loading="loading" @row-click="handleRowClick"
-          @selection-change="handleSelectionChange" :row-class-name="tableRowClassName">
-          <el-table-column type="selection" width="55" />
-          <el-table-column type="index" width="60" />
-          <el-table-column prop="username" label="用户名" min-width="120" />
-          <el-table-column prop="realName" label="真实姓名" min-width="120" />
-          <el-table-column label="角色" min-width="120">
-            <template #default="{ row }">
-              <el-tag v-for="role in row.roles" :key="role.id" :type="role.roleKey === 'admin' ? 'danger' : 'info'"
-                size="small" class="mr-1 mb-1">
-                {{ role.roleName }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="状态" width="120">
-            <template #default="{ row }">
-              <el-switch v-model="row.status" :active-value="1" :inactive-value="0"
-                @change="() => handleStatusChange(row)" />
-            </template>
-          </el-table-column>
-          <el-table-column prop="createdAt" label="创建时间" min-width="180">
-            <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
-          </el-table-column>
-          <el-table-column prop="lastLoginTime" label="最后登录" min-width="180">
-            <template #default="{ row }">{{ formatDate(row.lastLoginTime) }}</template>
-          </el-table-column>
-          <el-table-column label="操作" fixed="right" min-width="280">
-            <template #default="{ row }">
-              <el-button link type="primary" @click.stop="handleEdit(row)">编辑</el-button>
-              <el-button link type="warning" @click.stop="handleResetPassword(row)">重置密码</el-button>
-              <el-dropdown trigger="click" @click.stop>
-                <el-button link type="primary">
-                  权限设置<el-icon class="ml-1">
-                    <ArrowDown />
-                  </el-icon>
-                </el-button>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item @click="handleSetPermission(row, 'view')">数据查看权限</el-dropdown-item>
-                    <el-dropdown-item @click="handleSetPermission(row, 'edit')">数据编辑权限</el-dropdown-item>
-                    <el-dropdown-item @click="handleSetPermission(row, 'admin')">管理员权限</el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-              <el-button link type="danger" @click.stop="handleDelete(row)">删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-
-        <!-- 分页 -->
-        <div class="flex justify-end mt-4">
-          <el-pagination v-model:current-page="searchParams.page" v-model:page-size="searchParams.pageSize"
-            :page-sizes="[10, 20, 50, 100]" :total="total" layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleSizeChange" @current-change="handleCurrentChange" />
-        </div>
-      </div>
+  <div class="user-manage-container">
+    <!-- 搜索和操作按钮区域 -->
+    <div class="header-actions">
+      <SearchPanel @search="onSearch" @reset="onReset" />
+      <ActionBar :show-import="true" :show-export="true" :show-add="true" :show-delete="true"
+        :import-export-api="userApi" :query-params="queryParams" export-file-name="用户数据.xlsx"
+        template-file-name="用户导入模板.xlsx" module-name="用户" @add="handleAddUser" @delete="handleBatchDelete"
+        @refresh="fetchUserList" />
     </div>
 
-    <!-- 用户表单弹窗 -->
-    <user-form v-model:visible="userFormVisible" :user-id="currentUserId" @success="handleFormSuccess" />
+    <!-- 统一表格组件 -->
+    <UniTable :data="tableData ? tableData : []" :columns="columns" :loading="loading" :selection="true"
+      @selection-change="handleSelectionChange">
+      <template #status="{ row }">
+        <UniSwitch v-model="row.status" :active-value="1" :inactive-value="0" @change="() => handleStatusChange(row)" />
+      </template>
+      <template #action="{ row }">
+        <UniButton type="primary" size="small" @click="handleEdit(row)">编辑</UniButton>
+        <UniButton type="danger" size="small" @click="handleDelete(row)">删除</UniButton>
+      </template>
+    </UniTable>
 
-    <!-- 用户详情弹窗 -->
-    <user-detail v-model:visible="userDetailVisible" :user-id="currentUserId" />
+    <!-- 统一分页组件 -->
+    <div class="pagination-container">
+      <UniPagination v-model:page="currentPage" v-model:pageSize="currentPageSize" :total="total"
+        :page-sizes="[10, 20, 50, 100]" @update:page="handlePageChange" @update:pageSize="handleSizeChange" />
+    </div>
 
-    <!-- 密码重置弹窗 -->
-    <reset-password v-model:visible="resetPasswordVisible" :user-id="currentUserId" @success="fetchUserList" />
-
-    <!-- 高级筛选抽屉 -->
-    <advanced-search v-model:visible="advancedSearchVisible" :search-params="searchParams" :role-options="roleOptions"
-      @search="handleAdvancedSearch" />
+    <!-- 统一对话框组件 -->
+    <UserForm v-model:visible="dialogVisible" :userId="currentUserId === null ? undefined : currentUserId"
+      @success="handleFormSuccess" @cancel="dialogVisible = false" />
   </div>
 </template>
 
-<script lang="ts" setup>
-import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Plus, ArrowDown, Filter, Download } from '@element-plus/icons-vue'
-import { formatDate } from '@/utils/format'
-import { getUserList, deleteUser, updateUserStatus } from '@/api/modules/user'
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import type { User, UserQueryParams } from '@/types/user'
 import UserForm from './components/UserForm.vue'
-import UserDetail from './components/UserDetail.vue'
-import ResetPassword from './components/ResetPassword.vue'
-import AdvancedSearch from './components/AdvancedSearch.vue'
 import useUserTable from './hooks/useUserTable'
-import { useExport } from './hooks/useExport'
+import useUserActions from './hooks/useUserActions'
+
+// 引入统一组件
+import SearchPanel from '@/components/common/SearchPanel.vue'
+import ActionBar from '@/components/common/ActionBar.vue'
+import UniTable from '@/components/common/UniTable.vue'
+import UniButton from '@/components/common/UniButton.vue'
+import UniSwitch from '@/components/common/UniSwitch.vue'
+import UniPagination from '@/components/common/UniPagination.vue'
+import UniDialog from '@/components/common/UniDialog.vue'
+
+// 定义表格列类型
+interface TableColumn {
+  title?: string
+  label: string
+  key?: string
+  dataIndex?: string
+  slot?: string
+  width?: number
+  prop: string
+}
 
 // 表格相关逻辑
 const {
   loading,
-  userList,
+  userList: tableData,
   total,
-  roleOptions,
-  searchParams,
-  tableRowClassName,
+  searchParams: queryParams,
   fetchUserList,
   fetchRoleOptions,
   handleSizeChange,
-  handleCurrentChange
 } = useUserTable()
 
-// 弹窗控制
-const userFormVisible = ref(false)
-const userDetailVisible = ref(false)
-const resetPasswordVisible = ref(false)
-const advancedSearchVisible = ref(false)
-const currentUserId = ref<string>('')
+// 用户操作相关逻辑
+const {
+  handleStatusChange,
+  handleDelete
+} = useUserActions(fetchUserList)
 
-// 导出功能
-const { exportUserData } = useExport()
-const exporting = ref(false)
+// 弹窗控制
+const dialogVisible = ref(false)
+const dialogTitle = ref('新增用户')
+const currentUserId = ref<string | null>(null)
 
 // 多选功能
 const selectedRows = ref<User[]>([])
+
+// 添加计算属性
+const currentPage = computed({
+  get: () => queryParams.page || 1,
+  set: (val) => handlePageChange(val)
+})
+
+const currentPageSize = computed({
+  get: () => queryParams.pageSize || 10,
+  set: (val) => handleSizeChange(val)
+})
+
+// API路径定义 - 预留导入导出路径
+const userApi = {
+  exportUrl: '/api/v1/users/export',
+  importUrl: '/api/v1/users/import',
+  templateUrl: '/api/v1/users/import-template'
+}
 
 // 初始化
 onMounted(async () => {
@@ -177,12 +110,25 @@ onMounted(async () => {
     fetchUserList(),
     fetchRoleOptions()
   ])
+  console.log('用户数据:', tableData)
+  console.log('列定义:', columns.value)
 })
 
-// 行点击事件
-const handleRowClick = (row: User) => {
-  currentUserId.value = row.id || ''
-  userDetailVisible.value = true
+// 搜索和重置
+const onSearch = (params: Partial<UserQueryParams>) => {
+  Object.assign(queryParams, params, { page: 1 })
+  fetchUserList()
+}
+
+const onReset = () => {
+  // 重置搜索条件，但保留分页设置
+  // const { page, pageSize } = queryParams
+  Object.keys(queryParams).forEach(key => {
+    if (key !== 'page' && key !== 'pageSize') {
+      (queryParams as Record<string, any>)[key] = undefined
+    }
+  })
+  fetchUserList()
 }
 
 // 多选变化
@@ -190,222 +136,82 @@ const handleSelectionChange = (rows: User[]) => {
   selectedRows.value = rows
 }
 
-// 导出数据
-const handleExport = async () => {
-  exporting.value = true
-  try {
-    await exportUserData(searchParams)
-  } finally {
-    exporting.value = false
-  }
-}
-
-// 高级筛选
-const handleAdvancedSearch = (params: UserQueryParams) => {
-  // 合并参数，保留分页
-  const currentPage = searchParams.page
-  const currentPageSize = searchParams.pageSize
-
-  // 重置后赋值新参数
-  Object.assign(searchParams, params, {
-    page: currentPage,
-    pageSize: currentPageSize
-  })
-
+// 分页改变
+const handlePageChange = (page: number) => {
+  queryParams.page = page
   fetchUserList()
 }
 
 // 添加用户
 const handleAddUser = () => {
-  currentUserId.value = ''
-  userFormVisible.value = true
+  currentUserId.value = null
+  dialogTitle.value = '新增用户'
+  dialogVisible.value = true
 }
 
 // 编辑用户
 const handleEdit = (row: User) => {
-  currentUserId.value = row.id || ''
-  userFormVisible.value = true
-}
-
-// 重置密码
-const handleResetPassword = (row: User) => {
-  currentUserId.value = row.id || ''
-  resetPasswordVisible.value = true
-}
-
-// 更改用户状态
-const handleStatusChange = async (row: User) => {
-  if (!row.id) return
-
-  try {
-    await updateUserStatus(row.id, row.status || 0)
-    ElMessage.success(`已${row.status === 1 ? '启用' : '禁用'}用户：${row.username}`)
-  } catch (error) {
-    // 恢复原状态
-    row.status = row.status === 1 ? 0 : 1
-    ElMessage.error('修改用户状态失败')
-  }
-}
-
-// 设置权限
-const handleSetPermission = (row: User, type: string) => {
-  ElMessage.info(`设置用户 ${row.username} 的${type === 'view' ? '查看' : type === 'edit' ? '编辑' : '管理员'}权限`)
-  // 在实际项目中实现权限设置逻辑
-}
-
-// 删除用户
-const handleDelete = (row: User) => {
-  if (!row.id) return
-
-  ElMessageBox.confirm(
-    `确定要删除用户 ${row.username} 吗？`,
-    '警告',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    }
-  ).then(async () => {
-    try {
-      await deleteUser(row.id as string)
-      ElMessage.success(`已删除用户：${row.username}`)
-      fetchUserList()
-    } catch (error) {
-      ElMessage.error('删除用户失败')
-    }
-  })
-}
-
-// 批量启用
-const handleBatchEnable = async () => {
-  if (selectedRows.value.length === 0) return
-
-  try {
-    await ElMessageBox.confirm('确定要批量启用选中的用户吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'info'
-    })
-
-    const userIds = selectedRows.value.map(row => row.id).filter(Boolean) as string[]
-
-    // 实际项目中应该有批量接口，这里模拟为多次调用
-    await Promise.all(userIds.map(id => updateUserStatus(id, 1)))
-
-    ElMessage.success(`已成功启用 ${userIds.length} 个用户`)
-    await fetchUserList()
-  } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('批量启用失败')
-    }
-  }
-}
-
-// 批量禁用
-const handleBatchDisable = async () => {
-  if (selectedRows.value.length === 0) return
-
-  try {
-    await ElMessageBox.confirm('确定要批量禁用选中的用户吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-
-    const userIds = selectedRows.value.map(row => row.id).filter(Boolean) as string[]
-
-    await Promise.all(userIds.map(id => updateUserStatus(id, 0)))
-
-    ElMessage.success(`已成功禁用 ${userIds.length} 个用户`)
-    await fetchUserList()
-  } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('批量禁用失败')
-    }
-  }
-}
-
-// 批量删除
-const handleBatchDelete = async () => {
-  if (selectedRows.value.length === 0) return
-
-  try {
-    await ElMessageBox.confirm(
-      `确定要删除选中的 ${selectedRows.value.length} 个用户吗？此操作不可恢复！`,
-      '警告',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'error'
-      }
-    )
-
-    const userIds = selectedRows.value.map(row => row.id).filter(Boolean) as string[]
-
-    await Promise.all(userIds.map(id => deleteUser(id)))
-
-    ElMessage.success(`已成功删除 ${userIds.length} 个用户`)
-    await fetchUserList()
-  } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('批量删除失败')
-    }
-  }
+  currentUserId.value = row.id || null
+  dialogTitle.value = '编辑用户'
+  dialogVisible.value = true
 }
 
 // 表单提交成功回调
 const handleFormSuccess = () => {
+  dialogVisible.value = false
   fetchUserList()
 }
+
+// 预留批量操作函数
+const handleBatchDelete = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请选择要删除的用户')
+    return
+  }
+  ElMessage.info('批量删除功能开发中')
+}
+
+// 预留导入导出功能
+const handleImport = (file: File) => {
+  ElMessage.info('导入功能开发中')
+  return false
+}
+
+const handleExport = () => {
+  ElMessage.info('导出功能开发中')
+}
+
+// 表格列定义
+const columns = computed(() => [
+  { label: '用户名', prop: 'username' },
+  { label: '姓名', prop: 'realName' },
+  { label: '昵称', prop: 'nickname' },
+  // { label: '部门', prop: 'deptName' },
+  { label: '手机号码', prop: 'phone' },
+  { label: '邮箱', prop: 'email' },
+  { label: '状态', prop: 'status', slot: 'status' },
+  { label: '创建时间', prop: 'createdAt' },
+  { label: '操作', prop: 'action', slot: 'action', width: 180 }
+] as TableColumn[])
 </script>
 
-<style scoped>
-/* 按钮圆角样式 */
-.el-button.rounded-button {
-  border-radius: 4px;
+<style lang="scss" scoped>
+.user-manage-container {
+  padding: 20px;
 }
 
-/* 表格中的标签样式 */
-.el-tag+.el-tag {
-  margin-left: 4px;
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 16px;
 }
 
-/* 表格行样式 */
-:deep(.el-table .opacity-60) {
-  opacity: 0.6;
-}
-
-/* 表格hover样式 */
-:deep(.el-table tbody tr:hover > td) {
-  background-color: var(--el-table-row-hover-bg-color);
-  cursor: pointer;
-}
-
-/* 多选标签样式 */
-.el-tag.mr-2 {
-  margin-right: 8px;
-}
-
-/* 批量操作按钮间距 */
-.el-button+.el-button {
-  margin-left: 8px;
-}
-
-/* 表格内按钮样式 */
-:deep(.el-button--text) {
-  padding: 0 4px;
-}
-
-/* 下拉菜单样式 */
-:deep(.el-dropdown-menu__item) {
-  line-height: 30px;
-  padding: 0 16px;
-  font-size: 14px;
-}
-
-/* 分页样式 */
-.el-pagination {
-  margin-top: 16px;
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
   justify-content: flex-end;
 }
 </style>

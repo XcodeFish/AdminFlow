@@ -41,16 +41,16 @@
 
       <el-form-item label="状态" prop="status">
         <el-radio-group v-model="formData.status">
-          <el-radio :label="1">启用</el-radio>
-          <el-radio :label="0">禁用</el-radio>
+          <el-radio :value=(1)>启用</el-radio>
+          <el-radio :value=(0)>禁用</el-radio>
         </el-radio-group>
       </el-form-item>
 
       <el-form-item label="性别" prop="gender">
         <el-radio-group v-model="formData.gender">
-          <el-radio :label="1">男</el-radio>
-          <el-radio :label="2">女</el-radio>
-          <el-radio :label="0">保密</el-radio>
+          <el-radio :value=(1)>男</el-radio>
+          <el-radio :value=(2)>女</el-radio>
+          <el-radio :value=(0)>保密</el-radio>
         </el-radio-group>
       </el-form-item>
 
@@ -84,6 +84,9 @@ const props = defineProps({
     default: ''
   }
 })
+
+console.log('props 弹框', props.userId, props.visible);
+
 
 const emit = defineEmits<{
   (e: 'update:visible', visible: boolean): void
@@ -151,7 +154,7 @@ const rules = reactive<FormRules>({
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
   ],
   roleIds: [
-    { type: 'array', required: true, message: '请选择角色', trigger: 'change' }
+    { type: 'array', required: false, message: '请选择角色', trigger: 'change' }
   ]
 })
 

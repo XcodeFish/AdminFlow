@@ -7,6 +7,12 @@
 export {}
 declare global {
   const EffectScope: typeof import('vue')['EffectScope']
+  const ElDelete: typeof import('element-plus/es')['ElDelete']
+  const ElDownload: typeof import('element-plus/es')['ElDownload']
+  const ElMessage: typeof import('element-plus/es')['ElMessage']
+  const ElMessageBox: typeof import('element-plus/es')['ElMessageBox']
+  const ElPlus: typeof import('element-plus/es')['ElPlus']
+  const ElUpload: typeof import('element-plus/es')['ElUpload']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
   const computed: typeof import('vue')['computed']
   const createApp: typeof import('vue')['createApp']
