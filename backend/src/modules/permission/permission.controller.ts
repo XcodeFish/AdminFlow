@@ -19,6 +19,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiParam,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { PermissionService } from './permission.service';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -152,13 +153,26 @@ export class PermissionController {
     return this.permissionService.createPermission(createPermissionDto);
   }
 
-  @Get()
+  /**
+   * 查询权限列表
+   */
+  @Get('/permission/list')
   @Permissions(['system:permission:list'])
-  @ApiOperation({ summary: '分页查询权限列表' })
-  getPermissions(@Query() pageOptionsDto: PageOptionsDto) {
-    // Use existing method that works with pagination
-    const query = new QueryPermissionDto();
-    return this.permissionService.getPermissions(query);
+  @ApiOperation({ summary: '获取权限列表', description: '分页查询所有权限' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: '页码',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'take',
+    required: false,
+    description: '每页条数',
+    type: Number,
+  })
+  getPermissions(@Query('page') page = 1, @Query('take') take = 10) {
+    return this.permissionService.getPermissionsWithPagination(page, take);
   }
 
   @Get('perms')
@@ -224,8 +238,8 @@ export class PermissionController {
   @Permissions(['system:user:query'])
   @ApiOperation({ summary: '获取用户角色列表' })
   getUserRoles(@Param('userId', ParseUUIDPipe) userId: string) {
-    // Implement this method in service
-    return this.permissionService.getUserRoles(userId);
+    // 返回用户角色列表，包含完整角色信息，符合接口文档
+    return this.permissionService.getUserRolesWithDetails(userId);
   }
 
   @Get('users/:userId/permissions')
@@ -257,19 +271,5 @@ export class PermissionController {
   @HttpCode(HttpStatus.NO_CONTENT)
   clearUserPermissionCache(@Param('userId', ParseUUIDPipe) userId: string) {
     return this.permissionService.clearUserPermissionCache(userId);
-  }
-
-  @Get('audit')
-  @Permissions(['system:permission:audit'])
-  @ApiOperation({ summary: '查询权限审计日志' })
-  getAuditLogs(@Query() pageOptionsDto: PageOptionsDto) {
-    return this.permissionService.getPermissionAuditLogs(
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      pageOptionsDto.page,
-      pageOptionsDto.take,
-    );
   }
 }

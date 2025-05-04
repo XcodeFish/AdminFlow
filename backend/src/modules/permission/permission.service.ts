@@ -427,6 +427,36 @@ export class PermissionService {
     return user.roles.map((role) => role.roleKey);
   }
 
+  /**
+   * 获取用户角色列表（包含完整角色信息）
+   * @param userId 用户ID
+   * @returns 角色列表
+   */
+  async getUserRolesWithDetails(userId: string): Promise<any> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['roles'],
+    });
+
+    if (!user) {
+      this.logger.warn(`尝试获取不存在用户的角色: ${userId}`);
+      throw new NotFoundException('用户不存在');
+    }
+
+    // 返回角色详细信息，符合接口文档格式
+    return {
+      code: 0,
+      message: '查询成功',
+      data: user.roles.map((role) => ({
+        id: role.id,
+        roleName: role.roleName,
+        roleKey: role.roleKey,
+        dataScope: role.dataScope,
+        status: role.status,
+      })),
+    };
+  }
+
   // ==================== 用户角色管理 ====================
 
   /**
@@ -449,19 +479,17 @@ export class PermissionService {
 
     // 获取角色实体
     const roles = await this.roleRepository.find({
-      where: { roleKey: In(dto.roleKeys) },
+      where: { id: In(dto.roleIds) },
     });
 
-    if (roles.length !== dto.roleKeys.length) {
-      const foundKeys = roles.map((r) => r.roleKey);
-      const missingKeys = dto.roleKeys.filter(
-        (key) => !foundKeys.includes(key),
-      );
-      this.logger.warn(`部分角色不存在: ${missingKeys.join(', ')}`);
+    if (roles.length !== dto.roleIds.length) {
+      const foundIds = roles.map((r) => r.id);
+      const missingIds = dto.roleIds.filter((id) => !foundIds.includes(id));
+      this.logger.warn(`部分角色不存在: ${missingIds.join(', ')}`);
     }
 
     // 记录变更前的角色（用于审计）
-    const beforeRoleKeys = user.roles.map((r) => r.roleKey);
+    const beforeRoleIds = user.roles.map((r) => r.id);
 
     // 更新用户角色
     user.roles = roles;
@@ -472,8 +500,8 @@ export class PermissionService {
       operationType: 2, // 2: 用户角色变更
       targetId: userId,
       targetName: user.username,
-      beforeData: beforeRoleKeys,
-      afterData: dto.roleKeys,
+      beforeData: { roleIds: beforeRoleIds },
+      afterData: { roleIds: dto.roleIds },
       operator,
     });
 
@@ -844,5 +872,45 @@ export class PermissionService {
     } catch (error) {
       this.logger.error(`清除所有权限缓存出错: ${error.message}`, error.stack);
     }
+  }
+
+  /**
+   * 分页查询权限列表
+   * @param page 页码
+   * @param take 每页条数
+   */
+  async getPermissionsWithPagination(page: number, take: number): Promise<any> {
+    const queryBuilder =
+      this.permissionRepository.createQueryBuilder('permission');
+
+    // 根据分页参数查询
+    queryBuilder
+      .orderBy('permission.orderNum', 'ASC')
+      .addOrderBy('permission.createdAt', 'DESC')
+      .skip((page - 1) * take)
+      .take(take);
+
+    // 查询权限总数
+    const itemCount = await queryBuilder.getCount();
+
+    // 查询当前页数据
+    const items = await queryBuilder.getMany();
+
+    // 计算总页数
+    const totalPages = Math.ceil(itemCount / take);
+
+    // 返回符合接口文档规范的数据
+    return {
+      code: 0,
+      message: '查询成功',
+      data: {
+        items,
+        meta: {
+          itemCount,
+          totalPages,
+          currentPage: page,
+        },
+      },
+    };
   }
 }
