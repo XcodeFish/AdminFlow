@@ -9,15 +9,14 @@ import 'element-plus/dist/index.css'
 import './styles/index.scss'
 // 导入Element Plus图标
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+// 导入全局错误处理器
+import { globalErrorHandler } from './composables/useErrorHandler'
 
 // 创建应用实例
 const app = createApp(App)
 
 // 添加全局错误处理器
 app.config.errorHandler = (err, instance, info) => {
-  // 导入和使用全局错误处理器
-  const { globalErrorHandler } = require('./composables/useErrorHandler')
-
   // 处理错误并提供组件实例和错误信息
   globalErrorHandler.handleError(err, 'error', {
     log: true,

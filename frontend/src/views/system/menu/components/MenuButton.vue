@@ -1,20 +1,14 @@
 <template>
-  <div class="menu-button">
-    <el-button v-if="hasPermission('system:menu:add')" type="primary" :icon="Plus" @click="handleAddRoot">
-      新增
-    </el-button>
-    <el-button v-if="hasPermission('system:menu:export')" type="success" :icon="Upload" @click="handleExport">
-      导出
-    </el-button>
-    <el-button v-if="hasPermission('system:menu:import')" :icon="Download" @click="handleImport">
-      导入
-    </el-button>
+  <div class="menu-button-wrapper">
+    <ActionBar :show-add="hasPermission('system:menu:add')" :show-import="hasPermission('system:menu:import')"
+      :show-export="hasPermission('system:menu:export')" position="right" @add="handleAdd" @import="handleImport"
+      @export="handleExport" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { Plus, Upload, Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import ActionBar from '@/components/common/ActionBar.vue'
 import { usePermission } from '../hooks/usePermission'
 
 const emit = defineEmits<{
@@ -27,26 +21,24 @@ const emit = defineEmits<{
 const { hasPermission } = usePermission()
 
 // 新增根菜单
-const handleAddRoot = () => {
+const handleAdd = () => {
   emit('add')
 }
 
 // 导出菜单
 const handleExport = () => {
-  ElMessage.info('导出功能开发中')
   emit('export')
 }
 
 // 导入菜单
 const handleImport = () => {
-  ElMessage.info('导入功能开发中')
   emit('import')
 }
 </script>
 
 <style lang="scss" scoped>
-.menu-button {
+.menu-button-wrapper {
   display: flex;
-  gap: 10px;
+  justify-content: flex-end;
 }
 </style>

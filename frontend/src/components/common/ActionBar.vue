@@ -1,30 +1,13 @@
 <template>
   <div class="action-bar" :class="[`align-${position}`]">
     <slot name="prefix"></slot>
-      <el-button v-if="showAdd" type="primary" :icon="ElPlus" @click="$emit('add')">
-        新增
-      </el-button>
+      <el-button v-if="showAdd" type="primary" :icon="ElPlus" @click="$emit('add')">新增</el-button>
 
-      <el-button v-if="showDelete" type="danger" @click="$emit('delete')">
-        <el-icon>
-          <component :is="ElDelete" />
-        </el-icon>
-        批量删除
-      </el-button>
+      <el-button v-if="showDelete" type="danger" :icon="ElDelete" @click="$emit('delete')">批量删除</el-button>
 
-      <el-button v-if="showImport" type="success" @click="handleImport">
-        <el-icon>
-          <component :is="ElUpload" />
-        </el-icon>
-        导入
-      </el-button>
+      <el-button v-if="showImport" type="success" :icon="ElUpload" @click="handleImport">导入</el-button>
 
-      <el-button v-if="showExport" type="success" @click="handleExport">
-        <el-icon>
-          <component :is="ElDownload" />
-        </el-icon>
-        导出
-      </el-button>
+      <el-button v-if="showExport" type="success" :icon="ElDownload" @click="handleExport">导出</el-button>
     <slot name="suffix"></slot>
 
     <!-- 导入导出组件 -->

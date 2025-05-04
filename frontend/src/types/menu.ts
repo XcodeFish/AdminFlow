@@ -80,7 +80,7 @@ export interface CreateMenuParams {
  * 更新菜单参数
  */
 export interface UpdateMenuParams extends Partial<CreateMenuParams> {
-  id: string
+  // id: string
 }
 
 /**

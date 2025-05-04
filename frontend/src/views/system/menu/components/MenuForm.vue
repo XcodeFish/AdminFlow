@@ -236,7 +236,6 @@ const handleSubmit = async () => {
       if (props.menu) {
         // 更新菜单
         const updateData: UpdateMenuParams = {
-          id: props.menu.id,
           ...formData
         }
         await updateMenu(props.menu.id, updateData)

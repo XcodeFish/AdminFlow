@@ -6,11 +6,10 @@
       @selection-change="handleSelectionChange" @cell-click="handleCellClick" @row-click="handleRowClick"
       @sort-change="handleSortChange">
       <template v-for="column in validColumns" :key="column.prop || column.label">
-        <el-table-column :type="column.type" :label="column.label"
-          :prop="column.prop" :width="column.width" :min-width="column.minWidth"
-          :fixed="column.fixed" :sortable="column.sortable" :formatter="column.formatter" :align="column.align"
-          :header-align="column.headerAlign || column.align" :show-overflow-tooltip="column.showOverflowTooltip"
-          :class-name="column.className">
+        <el-table-column :type="column.type" :label="column.label" :prop="column.prop" :width="column.width"
+          :min-width="column.minWidth" :fixed="column.fixed" :sortable="column.sortable" :formatter="column.formatter"
+          :align="column.align" :header-align="column.headerAlign || column.align"
+          :show-overflow-tooltip="column.showOverflowTooltip" :class-name="column.className">
           <!-- 默认插槽，用于自定义单元格内容 -->
           <template #default="scope" v-if="column.slot">
             <slot :name="column.slot" :row="scope.row" :index="scope.$index"></slot>
@@ -26,7 +25,11 @@
       </template>
 
       <!-- 操作列插槽 -->
-      <slot name="action"></slot>
+      <el-table-column v-if="$slots.action" label="操作" fixed="right" min-width="150" align="center">
+        <template #default="scope">
+          <slot name="action" :row="scope.row" :index="scope.$index"></slot>
+        </template>
+      </el-table-column>
 
       <!-- 展开行插槽 -->
       <slot name="expand"></slot>
@@ -63,7 +66,7 @@ const props = withDefaults(defineProps<EnhancedTableProps>(), {
 // 合并所有Props，传递给el-table
 const tableProps = computed(() => {
   const { data, columns, ...rest } = props
-  console.log('columns', data, columns);
+  console.log('columns', data, columns)
 
   return rest
 })

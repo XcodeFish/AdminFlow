@@ -1,22 +1,20 @@
 <template>
-  <div class="batch-operation">
+  <div class="batch-operation-wrapper">
     <div v-if="selectedIds.length > 0" class="selected-info">
       已选择 <span class="selected-count">{{ selectedIds.length }}</span> 项
     </div>
-    <el-button-group v-if="selectedIds.length > 0">
-      <el-button v-if="hasPermission('system:menu:edit')" type="primary" :icon="Edit"
-        @click="handleBatchEnable">批量启用</el-button>
-      <el-button v-if="hasPermission('system:menu:edit')" type="info" :icon="CircleClose"
-        @click="handleBatchDisable">批量禁用</el-button>
-      <el-button v-if="hasPermission('system:menu:delete')" type="danger" :icon="Delete"
-        @click="handleBatchDelete">批量删除</el-button>
-    </el-button-group>
+    <UniButton v-if="selectedIds.length > 0 && hasPermission('system:menu:edit')" type="primary" size="small"
+      @click="handleBatchEnable">批量启用</UniButton>
+    <UniButton v-if="selectedIds.length > 0 && hasPermission('system:menu:edit')" type="info" size="small"
+      @click="handleBatchDisable">批量禁用</UniButton>
+    <UniButton v-if="selectedIds.length > 0 && hasPermission('system:menu:delete')" type="danger" size="small"
+      @click="handleBatchDelete">批量删除</UniButton>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Edit, CircleClose, Delete } from '@element-plus/icons-vue'
-import { ElMessageBox, ElMessage } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
+import UniButton from '@/components/common/UniButton.vue'
 import { usePermission } from '../hooks/usePermission'
 
 const props = defineProps<{
@@ -67,15 +65,15 @@ const handleBatchDelete = () => {
 </script>
 
 <style lang="scss" scoped>
-.batch-operation {
+.batch-operation-wrapper {
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 10px;
+  gap: 8px;
 
   .selected-info {
     font-size: 14px;
     color: #606266;
+    margin-right: 8px;
 
     .selected-count {
       color: #409eff;
