@@ -2,6 +2,17 @@ import { ref, reactive, computed } from 'vue'
 import { getUserList } from '@/api/modules/user'
 import type { User, UserQueryParams, Role } from '@/types/user'
 
+// 定义表格列类型
+interface TableColumn {
+  title?: string
+  label: string
+  key?: string
+  dataIndex?: string
+  slot?: string
+  width?: number
+  prop: string
+}
+
 export default function useUserTable() {
   // 列表数据
   const userList = ref<User[]>([])
@@ -66,6 +77,20 @@ export default function useUserTable() {
     return ''
   }
 
+  const columns = computed(
+    () =>
+      [
+        { label: '用户名', prop: 'username' },
+        { label: '姓名', prop: 'realName' },
+        { label: '昵称', prop: 'nickname' },
+        // { label: '部门', prop: 'deptName' },
+        { label: '手机号码', prop: 'phone' },
+        { label: '邮箱', prop: 'email' },
+        { label: '状态', prop: 'status', slot: 'status' },
+        { label: '创建时间', prop: 'createdAt' }
+      ] as TableColumn[]
+  )
+
   return {
     loading,
     userList,
@@ -76,6 +101,7 @@ export default function useUserTable() {
     fetchUserList,
     fetchRoleOptions,
     handleCurrentChange,
-    handleSizeChange
+    handleSizeChange,
+    columns
   }
 }

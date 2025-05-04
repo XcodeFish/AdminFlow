@@ -34,3 +34,10 @@ export interface LoginResult {
     permissions: string[] // 权限标识列表
   }
 }
+
+// 通用响应
+export interface CommonResponse {
+  code: number
+  message: string
+  data: any
+}

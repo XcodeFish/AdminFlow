@@ -2,7 +2,6 @@
 import { defineStore } from 'pinia'
 import { LoginParams } from '@/types/auth'
 import { User } from '@/types/user'
-import request from '@/utils/request'
 import { login, logout } from '@/api/modules/auth'
 import { usePermissionStore } from '@/store/modules/permission'
 
@@ -46,6 +45,11 @@ export const useUserStore = defineStore('user', {
       } else {
         localStorage.removeItem('token')
       }
+    },
+
+    updateUserInfo(userInfo: User): void {
+      // 合并新的用户信息到现有信息
+      this.userInfo = { ...this.userInfo, ...userInfo }
     },
 
     setRememberMe(value: boolean): void {

@@ -2,13 +2,12 @@
   <div class="dashboard">
     <!-- 欢迎信息区域 -->
     <div class="welcome-section">
-      <h1 class="dashboard-title">欢迎使用 Admin Flow 系统</h1>
-      <p class="welcome-text">早上好，{{ userInfo.nickname || userInfo.username }}，祝您开心每一天！</p>
+      <div class="welcome-text-container">
+        <h1 class="dashboard-title">欢迎使用 Admin Flow 系统</h1>
+        <p class="welcome-text">早上好，{{ userInfo.realName || userInfo.username }}，祝您开心每一天！</p>
+      </div>
       <div class="time-weather">
         <div class="time">{{ currentTime }}</div>
-        <div class="weather-info">
-          <span>{{ weather.temperature }}°C / {{ weather.condition }}</span>
-        </div>
       </div>
     </div>
 
@@ -29,7 +28,6 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
 import { useUserStore } from '@/store/modules/user'
 import TodoList from './components/TodoList.vue'
 import StatCards from './components/StatCards.vue'
@@ -43,11 +41,6 @@ const userInfo = userStore.userInfo || { username: '管理员', nickname: '' }
 // 使用时间hook
 const { currentTime } = useTime()
 
-// 天气信息
-const weather = reactive({
-  temperature: '25',
-  condition: '晴朗'
-})
 
 // 统计卡片数据
 const statsCards = [
@@ -69,6 +62,9 @@ const statsCards = [
   border-radius: 8px;
   margin-bottom: 20px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .dashboard-title {
@@ -84,8 +80,9 @@ const statsCards = [
 }
 
 .time-weather {
-  display: flex;
-  align-items: center;
+  min-width: 150px;
+  /* display: flex;
+  align-items: center; */
 }
 
 .time {

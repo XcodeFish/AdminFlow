@@ -1,4 +1,3 @@
-
 import {
   Controller,
   Get,
@@ -9,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -22,6 +22,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { Public } from '../../core/decorators/public.decorator';
 
 @ApiTags('用户管理')
@@ -106,5 +107,26 @@ export class UserController {
   @ApiResponse({ status: 404, description: '用户不存在' })
   async updateStatus(@Param('id') id: string, @Body('status') status: number) {
     return this.userService.updateStatus(id, status);
+  }
+
+  @Post('change-password')
+  @ApiOperation({ summary: '修改用户自己的密码' })
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: '密码修改成功' })
+  @ApiResponse({ status: 400, description: '参数错误' })
+  @ApiResponse({ status: 400, description: '原密码错误' })
+  async changePassword(
+    @Req() request,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    // 从请求中获取当前用户ID
+    const userId = request.user.id;
+
+    await this.userService.changePassword(userId, changePasswordDto);
+    return {
+      code: 200,
+      message: '密码修改成功',
+      data: null,
+    };
   }
 }

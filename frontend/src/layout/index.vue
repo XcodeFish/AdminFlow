@@ -28,7 +28,7 @@
             </div>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item>个人中心</el-dropdown-item>
+                <el-dropdown-item @click="openUserProfile">个人中心</el-dropdown-item>
                 <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -40,11 +40,12 @@
         <router-view />
       </div>
     </div>
+    <UserProfile v-model:visible="userProfileVisible" :user-info="currentUser" @refresh="fetchUserInfo" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   Fold,
@@ -54,6 +55,8 @@ import {
 import { useUserStore } from '@/store/modules/user'
 import Sidebar from './components/Sidebar.vue'
 import { globalErrorHandler } from '@/composables/useErrorHandler'
+import UserProfile from '@/components/UserProfile/index.vue'
+import type { User } from '@/types/user'
 
 const router = useRouter()
 const route = useRoute()
@@ -61,6 +64,8 @@ const userStore = useUserStore()
 
 // 侧边栏收起状态
 const isCollapse = ref(false)
+const userProfileVisible = ref(false)
+const currentUser = ref<User>({})
 
 // 切换侧边栏
 const toggleSidebar = () => {
@@ -87,6 +92,15 @@ const username = computed(() => {
   return userStore.userInfo?.nickname || userStore.userInfo?.username || '用户'
 })
 
+// 获取用户信息
+const fetchUserInfo = async () => {
+  try {
+    currentUser.value = await userStore.getUserInfo
+  } catch (error) {
+    console.error('获取用户信息失败', error)
+  }
+}
+
 // 退出登录
 const handleLogout = async () => {
   try {
@@ -99,6 +113,12 @@ const handleLogout = async () => {
   }
 }
 
+// 打开个人信息弹框
+const openUserProfile = () => {
+  userProfileVisible.value = true
+}
+
+
 // 初始化侧边栏状态（从本地存储读取）
 (() => {
   try {
@@ -110,6 +130,10 @@ const handleLogout = async () => {
     console.error('读取侧边栏状态失败:', error)
   }
 })()
+
+onMounted(async () => {
+  await fetchUserInfo()
+})
 </script>
 
 <style lang="scss" scoped>

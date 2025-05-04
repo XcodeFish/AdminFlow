@@ -103,6 +103,13 @@ export interface ResetPasswordParams {
   password: string
 }
 
+// 修改密码参数
+export interface ChangePasswordParams {
+  oldPassword: string
+  newPassword: string
+  confirmPassword: string
+}
+
 // API响应类型定义
 export interface UserListResponse {
   code?: number

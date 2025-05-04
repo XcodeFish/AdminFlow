@@ -1,0 +1,11 @@
+/* 移除所有链接的下划线 */
+a {
+  text-decoration: none !important;
+}
+
+/* 或者更具体地针对菜单中的链接 */
+.el-menu a,
+.el-submenu a,
+.el-menu-item a {
+  text-decoration: none !important;
+}

@@ -155,4 +155,9 @@ const handleFormSuccess = () => {
   margin-bottom: 16px;
   gap: 16px;
 }
+
+.el-menu-item.is-active,
+.el-submenu.is-active .el-submenu__title {
+  text-decoration: none !important;
+}
 </style>

@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import { CommonResponse } from '../../types/api'
 import {
   CreateUserParams,
   UpdateUserParams,
@@ -10,8 +11,10 @@ import {
   UpdateUserResponse,
   DeleteUserResponse,
   ResetPasswordResponse,
-  UpdateUserStatusResponse
+  UpdateUserStatusResponse,
+  ChangePasswordParams
 } from '@/types/user'
+
 
 /**
  * 创建用户
@@ -61,6 +64,16 @@ export const deleteUser = (id: string) => {
  */
 export const resetUserPassword = (id: string, data: ResetPasswordParams) => {
   return request.post<ResetPasswordResponse>(`/v1/users/${id}/reset-password`, data)
+}
+
+/**
+ * 修改用户密码
+ * @param id 用户ID
+ * @param data 密码数据
+ */
+
+export const changeUserPassword = ( data: ChangePasswordParams) => {
+  return request.post<CommonResponse>('v1/users/change-password', data)
 }
 
 /**

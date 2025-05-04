@@ -48,18 +48,6 @@ import UniTable from '@/components/common/UniTable.vue'
 import UniButton from '@/components/common/UniButton.vue'
 import UniSwitch from '@/components/common/UniSwitch.vue'
 import UniPagination from '@/components/common/UniPagination.vue'
-import UniDialog from '@/components/common/UniDialog.vue'
-
-// 定义表格列类型
-interface TableColumn {
-  title?: string
-  label: string
-  key?: string
-  dataIndex?: string
-  slot?: string
-  width?: number
-  prop: string
-}
 
 // 表格相关逻辑
 const {
@@ -70,6 +58,7 @@ const {
   fetchUserList,
   fetchRoleOptions,
   handleSizeChange,
+  columns,
 } = useUserTable()
 
 // 用户操作相关逻辑
@@ -110,8 +99,6 @@ onMounted(async () => {
     fetchUserList(),
     fetchRoleOptions()
   ])
-  console.log('用户数据:', tableData)
-  console.log('列定义:', columns.value)
 })
 
 // 搜索和重置
@@ -180,19 +167,6 @@ const handleImport = (file: File) => {
 const handleExport = () => {
   ElMessage.info('导出功能开发中')
 }
-
-// 表格列定义
-const columns = computed(() => [
-  { label: '用户名', prop: 'username' },
-  { label: '姓名', prop: 'realName' },
-  { label: '昵称', prop: 'nickname' },
-  // { label: '部门', prop: 'deptName' },
-  { label: '手机号码', prop: 'phone' },
-  { label: '邮箱', prop: 'email' },
-  { label: '状态', prop: 'status', slot: 'status' },
-  { label: '创建时间', prop: 'createdAt' },
-  { label: '操作', prop: 'action', slot: 'action', width: 180 }
-] as TableColumn[])
 </script>
 
 <style lang="scss" scoped>

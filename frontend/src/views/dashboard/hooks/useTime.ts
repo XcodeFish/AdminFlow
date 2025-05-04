@@ -9,15 +9,16 @@ export function useTime() {
     const now = new Date()
     const hours = now.getHours().toString().padStart(2, '0')
     const minutes = now.getMinutes().toString().padStart(2, '0')
-    currentTime.value = `${hours}:${minutes}`
+    const seconds = now.getSeconds().toString().padStart(2, '0')
+    currentTime.value = `${hours}:${minutes}:${seconds}`
   }
 
   onMounted(() => {
     // 初始化时间
     updateTime()
 
-    // 每分钟更新一次
-    timerInterval = setInterval(updateTime, 60000)
+    // 每秒更新一次
+    timerInterval = setInterval(updateTime, 1000)
   })
 
   onUnmounted(() => {
