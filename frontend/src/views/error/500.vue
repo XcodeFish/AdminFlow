@@ -23,7 +23,7 @@ const goBack = () => {
 }
 
 const goHome = () => {
-  router.push('/')
+  router.push('/dashboard')
 }
 
 const refresh = () => {

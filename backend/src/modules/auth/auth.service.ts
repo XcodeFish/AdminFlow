@@ -144,6 +144,37 @@ export class AuthService {
   }
 
   /**
+   * 退出登录
+   * @param userId 用户ID
+   * @returns 退出结果
+   */
+  async logout(userId: string) {
+    try {
+      // 更新最后登出时间
+      await this.userService.updateLogoutTime(userId);
+
+      this.logger.debug(`用户[${userId}]成功登出`);
+
+      return {
+        code: 200,
+        message: '退出成功',
+        data: null,
+      };
+    } catch (error) {
+      this.logger.error(
+        `用户[${userId}]登出失败: ${error.message}`,
+        error.stack,
+      );
+      // 即使更新失败，仍然返回成功，因为前端已经清除了token
+      return {
+        code: 200,
+        message: '退出成功',
+        data: null,
+      };
+    }
+  };
+
+  /**
    * 解析过期时间字符串为秒数
    * @param expiration 过期时间字符串，如"8h"、"7d"
    * @returns 秒数

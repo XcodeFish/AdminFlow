@@ -35,6 +35,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { cloneDeep, isEqual } from 'lodash-es' // 用于深比较对象
 import type { User, Role } from '@/types/user'
 import BasicInfoForm from './components/BasicInfoForm.vue'
@@ -68,7 +69,7 @@ const pwdFormRef = ref()
 const formData = ref<User>({})
 const originalFormData = ref<User>({})
 const userRoles = computed<Role[]>(() => props.userInfo.roles || [])
-
+const router = useRouter()
 // 判断基本信息是否有修改
 const hasBasicInfoChanged = computed(() => {
   // 排除username和roles字段，只比较可编辑的字段
@@ -86,16 +87,6 @@ const handleFormChange = (data: User) => {
     originalFormData.value = cloneDeep(data)
   }
 }
-
-// const handlePasswordChange = async (success: boolean) => {
-//   if (success) {
-//     // 密码更新成功会在handlePasswordChange中处理登出
-//     showSuccess('密码修改成功')
-//     // await userStore.logoutAction()
-//   } else {
-//     showError('密码修改失败')
-//   }
-// }
 
 // 关闭对话框
 const handleClose = () => {
@@ -174,6 +165,7 @@ const handleSubmit = async () => {
           showSuccess('密码修改成功，即将退出登录...')
           setTimeout(async () => {
             await userStore.logoutAction()
+            router.push('/login')
           }, 1500)
         } else {
           // 密码修改失败

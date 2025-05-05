@@ -1,4 +1,3 @@
-// frontend/src/store/modules/user.ts
 import { defineStore } from 'pinia'
 import { LoginParams } from '@/types/auth'
 import { User } from '@/types/user'

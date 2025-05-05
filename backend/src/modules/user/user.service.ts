@@ -338,6 +338,13 @@ export class UserService {
     await this.userRepository.save(user);
   }
 
+  async updateLogoutTime(userId: string): Promise<void> {
+    await this.userRepository.update(
+      { id: userId },
+      { lastLogoutTime: new Date() },
+    );
+  }
+
   /**
    * 更新用户状态
    */

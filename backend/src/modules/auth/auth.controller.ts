@@ -1,10 +1,17 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+// backend/src/modules/auth/auth.controller.ts
+import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { Public } from '@core/decorators/public.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { TokenDto } from './dto/token.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
+import { JwtAuthGuard } from '@core/guards/jwt-auth.guard';
 
 @ApiTags('认证')
 @Controller('auth')
@@ -18,5 +25,16 @@ export class AuthController {
   @ApiResponse({ status: 401, description: '用户名或密码错误' })
   async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
     return this.authService.login(loginDto);
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '退出登录', description: '用户退出登录' })
+  @ApiResponse({ status: 200, description: '退出成功' })
+  @ApiResponse({ status: 401, description: '未授权' })
+  async logout(@Req() req) {
+    const userId = req.user.userId;
+    return this.authService.logout(userId);
   }
 }
