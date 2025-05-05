@@ -410,7 +410,7 @@ export class PermissionService {
   /**
    * 获取角色权限列表
    */
-  async getRolePermissions(roleId: string): Promise<string[]> {
+  async getRolePermissions(roleId: string): Promise<any> {
     const role = await this.roleRepository.findOne({
       where: { id: roleId },
       relations: ['permissions'],
@@ -421,7 +421,16 @@ export class PermissionService {
       throw new NotFoundException('角色不存在');
     }
 
-    return role.permissions.map((permission) => permission.permKey);
+    // 直接返回权限数组，让拦截器负责包装
+    return role.permissions.map((permission) => ({
+      id: permission.id,
+      permName: permission.permName,
+      permKey: permission.permKey,
+      permType: permission.permType,
+      parentId: permission.parentId,
+    }));
+
+    // return role.permissions.map((permission) => permission.permKey);
   }
 
   /**

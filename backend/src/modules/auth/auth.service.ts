@@ -1,11 +1,15 @@
-import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger, } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../user/user.service';
 import { LoginDto } from './dto/login.dto';
 import { TokenDto } from './dto/token.dto';
+import { DepartmentEntity } from '../dept/entities/dept.entity';
 import { LoginResponseDto } from './dto/login-response.dto';
+
 
 // 如果存在权限服务，直接导入
 import { PermissionService } from '../permission/permission.service';
@@ -19,6 +23,8 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private permissionService: PermissionService, // 添加权限服务依赖
+    @InjectRepository(DepartmentEntity)
+    private departmentRepository: Repository<DepartmentEntity>,
   ) {}
 
   /**
@@ -109,6 +115,15 @@ export class AuthService {
       expiresIn: accessTokenExpiration,
     });
 
+    // 查询部门名称
+    let deptName = undefined;
+    if (user.deptId) {
+      const dept = await this.departmentRepository.findOne({
+        where: { id: user.deptId },
+      });
+      deptName = dept?.deptName;
+    }
+
     // 创建用户响应对象，移除敏感字段
     const userResponse = {
       id: user.id,
@@ -121,6 +136,7 @@ export class AuthService {
       avatar: user.avatar,
       status: user.status,
       deptId: user.deptId,
+      deptName: deptName,
       roles:
         user.roles?.map((role) => ({
           id: +role.id, // Convert string to number
@@ -172,7 +188,7 @@ export class AuthService {
         data: null,
       };
     }
-  };
+  }
 
   /**
    * 解析过期时间字符串为秒数

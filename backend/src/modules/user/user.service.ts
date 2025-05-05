@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder, In, EntityManager } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
 import { RoleEntity } from './entities/role.entity';
+import { DepartmentEntity } from '../dept/entities/dept.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
@@ -27,6 +28,8 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(RoleEntity)
     private readonly roleRepository: Repository<RoleEntity>,
+    @InjectRepository(DepartmentEntity)
+    private readonly departmentRepository: Repository<DepartmentEntity>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private configService: ConfigService,
   ) {}
@@ -71,6 +74,8 @@ export class UserService {
           ...createUserDto,
           password: hashedPassword,
           roles,
+          // 确保 deptId 是字符串类型
+          deptId: createUserDto.deptId ? String(createUserDto.deptId) : null,
         });
 
         // 保存用户
@@ -84,7 +89,7 @@ export class UserService {
    */
   async findAll(
     query: UserQueryDto,
-  ): Promise<PaginatedResponseDto<UserEntity>> {
+  ): Promise<PaginatedResponseDto<UserEntity & { deptName: string }>> {
     const {
       page = 1,
       pageSize = 10,
@@ -101,7 +106,9 @@ export class UserService {
     const cachedResult = await this.cacheManager.get(cacheKey);
 
     if (cachedResult) {
-      return cachedResult as PaginatedResponseDto<UserEntity>;
+      return cachedResult as PaginatedResponseDto<
+        UserEntity & { deptName: string }
+      >;
     }
 
     // 构建查询构建器
@@ -141,8 +148,27 @@ export class UserService {
     // 执行查询并计算总数
     const [users, total] = await queryBuilder.getManyAndCount();
 
+    // 添加部门名称信息
+    const usersWithDeptName = await Promise.all(
+      users.map(async (user) => {
+        let deptName = undefined;
+        if (user.deptId) {
+          const dept = await this.departmentRepository.findOne({
+            where: { id: user.deptId },
+          });
+          deptName = dept?.deptName;
+        }
+        return { ...user, deptName };
+      }),
+    );
+
     // 构建分页响应
-    const result = new PaginatedResponseDto(users, total, page, pageSize);
+    const result = new PaginatedResponseDto(
+      usersWithDeptName,
+      total,
+      page,
+      pageSize,
+    );
 
     // 缓存结果，设置5分钟TTL
     await this.cacheManager.set(cacheKey, result, 5 * 60 * 1000);
@@ -153,12 +179,12 @@ export class UserService {
   /**
    * 根据ID查询用户，带缓存
    */
-  async findById(id: string): Promise<UserEntity> {
+  async findById(id: string): Promise<UserEntity & { deptName: string }> {
     const cacheKey = `user_${id}`;
     const cachedUser = await this.cacheManager.get(cacheKey);
 
     if (cachedUser) {
-      return cachedUser as UserEntity;
+      return cachedUser as UserEntity & { deptName: string };
     }
 
     const user = await this.userRepository.findOne({
@@ -170,10 +196,22 @@ export class UserService {
       throw new NotFoundException(`ID为${id}的用户不存在`);
     }
 
-    // 缓存用户信息，30分钟
-    await this.cacheManager.set(cacheKey, user, 30 * 60 * 1000);
+    // 查询部门信息
+    let deptName = undefined;
+    if (user.deptId) {
+      const dept = await this.departmentRepository.findOne({
+        where: { id: user.deptId },
+      });
+      deptName = dept?.deptName;
+    }
 
-    return user;
+    // 合并部门名称到用户对象
+    const userWithDept = { ...user, deptName };
+
+    // 缓存用户信息，30分钟
+    await this.cacheManager.set(cacheKey, userWithDept, 30 * 60 * 1000);
+
+    return userWithDept;
   }
 
   /**

@@ -19,14 +19,17 @@ export default function useRolePermission(roleId: Ref<string | null>) {
     try {
       // 获取所有权限树
       const treeRes = await getPermissionTree()
-      if (treeRes.code === 0) {
+
+      if (treeRes.code === 200) {
         permissionTree.value = treeRes.data
       }
 
       // 获取角色已有权限
       const rolePermRes = await getRolePermissions(roleId.value)
-      if (rolePermRes.code === 0) {
+      console.log('rolePermRes', rolePermRes)
+      if (rolePermRes.code === 200) {
         checkedPermKeys.value = rolePermRes.data.map((perm) => perm.permKey)
+        console.log('映射后的checkedPermKeys:', checkedPermKeys.value)
       }
     } catch (error) {
       console.error('加载权限数据失败', error)

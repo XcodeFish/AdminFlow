@@ -87,10 +87,10 @@ export class UserEntity extends BaseEntity {
 
   @ApiProperty({
     description: '部门ID',
-    example: 1,
+    example: '550e8400-e29b-41d4-a716-446655440000',
   })
-  @Column({ name: 'dept_id', nullable: true, comment: '部门ID' })
-  deptId: number;
+  @Column({ name: 'dept_id', type: 'uuid', nullable: true, comment: '部门ID' })
+  deptId: string;
 
   @ApiProperty({
     description: '最后登录时间',

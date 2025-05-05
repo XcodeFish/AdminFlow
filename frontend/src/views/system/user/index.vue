@@ -56,7 +56,6 @@ const {
   total,
   searchParams: queryParams,
   fetchUserList,
-  fetchRoleOptions,
   handleSizeChange,
   columns,
 } = useUserTable()
@@ -97,7 +96,6 @@ const userApi = {
 onMounted(async () => {
   await Promise.all([
     fetchUserList(),
-    fetchRoleOptions()
   ])
 })
 

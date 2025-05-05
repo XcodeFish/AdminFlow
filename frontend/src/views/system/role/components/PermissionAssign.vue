@@ -82,6 +82,10 @@ const {
   getPermTypeName
 } = useRolePermission(currentRoleId)
 
+console.log('checkedPermKeys', checkedPermKeys.value)
+
+
+
 // 权限类型对应的Tag类型
 const getPermTypeTag = (type: number) => {
   switch (type) {
@@ -101,9 +105,16 @@ watch(() => props.roleId, (newVal) => {
 }, { immediate: true })
 
 // 监听visible变化
-watch(() => props.visible, (newVal) => {
+watch(() => props.visible, async (newVal) => {
   if (newVal && currentRoleId.value) {
-    loadPermissionData()
+    await loadPermissionData()
+    // 确保树组件已加载完成
+    nextTick(() => {
+      if (permissionTreeRef.value) {
+        permissionTreeRef.value.setCheckedKeys(checkedPermKeys.value)
+      }
+    })
+    console.log('加载后的checkedPermKeys', checkedPermKeys.value)
   }
 })
 

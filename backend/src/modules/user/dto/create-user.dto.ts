@@ -12,6 +12,7 @@ import {
   Max,
   ArrayNotEmpty,
   IsEnum,
+  IsUUID,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -118,13 +119,12 @@ export class CreateUserDto {
 
   @ApiProperty({
     description: '部门ID',
-    example: 1,
+    example: '550e8400-e29b-41d4-a716-446655440000',
     required: false,
   })
   @IsOptional()
-  @IsInt({ message: '部门ID必须是整数' })
-  @Min(1, { message: '部门ID必须大于0' })
-  deptId?: number;
+  @IsUUID(4, { message: '部门ID必须是有效的UUID' })
+  deptId?: string;
 
   @ApiProperty({
     description: '角色ID列表',

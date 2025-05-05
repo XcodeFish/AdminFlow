@@ -35,7 +35,7 @@
       <el-form-item label="角色" prop="roleIds">
         <el-select v-model="formData.roleIds" multiple collapse-tags collapse-tags-tooltip placeholder="请选择角色"
           style="width: 100%;">
-          <el-option v-for="item in roleOptions" :key="item.id" :label="item.roleName" :value="item.id" />
+          <el-option v-for="item in roleList" :key="item.id" :label="item.roleName" :value="item.id" />
         </el-select>
       </el-form-item>
 
@@ -69,10 +69,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, watch, computed } from 'vue'
+import { ref, reactive, watch, computed, onMounted } from 'vue'
 import { ElMessage, FormInstance, FormRules } from 'element-plus'
 import { createUser, updateUser, getUserById } from '@/api/modules/user'
 import type { CreateUserParams, UpdateUserParams, Role } from '@/types/user'
+import useUserTable from '../hooks/useUserTable'
+import useRoleTable from '../../role/hooks/useRoleTable'
 
 const props = defineProps({
   visible: {
@@ -84,9 +86,6 @@ const props = defineProps({
     default: ''
   }
 })
-
-console.log('props 弹框', props.userId, props.visible);
-
 
 const emit = defineEmits<{
   (e: 'update:visible', visible: boolean): void
@@ -104,21 +103,15 @@ const formRef = ref<FormInstance>()
 const submitting = ref(false)
 
 // 部门和角色选项
-const deptOptions = ref([
-  {
-    id: 1, deptName: '总公司', children: [
-      { id: 2, deptName: '研发部' },
-      { id: 3, deptName: '市场部' },
-      { id: 4, deptName: '运营部' }
-    ]
-  }
-])
+const {
+  deptOptions,
+  fetchDeptTree
+} = useUserTable()
 
-const roleOptions = ref<Role[]>([
-  { id: '1', roleName: '管理员', roleKey: 'admin', orderNum: 1, status: 1, dataScope: 1, permissions: [] },
-  { id: '2', roleName: '普通用户', roleKey: 'user', orderNum: 2, status: 1, dataScope: 5, permissions: [] },
-  { id: '3', roleName: '开发人员', roleKey: 'dev', orderNum: 3, status: 1, dataScope: 2, permissions: [] },
-])
+const {
+  roleList,
+  fetchRoleList
+} = useRoleTable()
 
 // 表单数据
 const defaultFormData = (): CreateUserParams => ({
@@ -164,6 +157,13 @@ watch(() => props.userId, async (newVal) => {
     await fetchUserInfo(newVal)
   }
 }, { immediate: true })
+
+// 修改 watch 监听 - 添加对 visible 的监听
+watch(() => props.visible, async (newVal) => {
+  if (newVal && props.userId) {
+    await fetchUserInfo(props.userId)
+  }
+})
 
 // 获取用户信息
 const fetchUserInfo = async (id: string) => {
@@ -221,6 +221,12 @@ const handleSubmit = async () => {
     }
   })
 }
+
+// 组件挂载时加载数据
+onMounted(() => {
+  fetchDeptTree()
+  fetchRoleList()
+})
 
 // 弹窗关闭时重置表单
 const handleDialogClosed = () => {

@@ -10,6 +10,7 @@ import {
   Min,
   IsEnum,
   ArrayNotEmpty,
+  IsUUID,
 } from 'class-validator';
 
 export class UpdateUserDto {
@@ -95,20 +96,18 @@ export class UpdateUserDto {
     required: false
   })
   @IsOptional()
-  @IsInt({ message: '部门ID必须是整数' })
-  @Min(1, { message: '部门ID必须大于0' })
-  deptId?: number;
+  @IsUUID(4, { message: '部门ID必须是有效的UUID' })
+  deptId?: string;
 
   @ApiProperty({
     description: '角色ID列表',
-    example: [1, 2],
-    type: [Number],
+    example: ['1', '2'],
+    type: [String],
     required: false
   })
   @IsOptional()
   @IsArray({ message: '角色ID必须是数组' })
   @ArrayNotEmpty({ message: '至少选择一个角色' })
-  @IsInt({ each: true, message: '角色ID必须是整数' })
-  @Min(1, { each: true, message: '角色ID必须大于0' })
-  roleIds?: number[];
+  @IsUUID(4, { each: true, message: '角色ID必须是有效的UUID' })
+  roleIds?: string[];
 }

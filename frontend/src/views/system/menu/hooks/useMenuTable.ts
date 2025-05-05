@@ -1,6 +1,7 @@
 import { ref, reactive, computed, nextTick } from 'vue'
 import { getMenuList } from '@/api/modules/menu'
 import type { MenuItem, QueryMenuParams } from '@/types/menu'
+import { formatDate } from '@/utils/format'
 
 export default function useMenuTable() {
   // 列表数据
@@ -44,8 +45,9 @@ export default function useMenuTable() {
       prop: 'createdAt',
       label: '创建时间',
       minWidth: 180,
-      formatter: (row: MenuItem) => {
-        return new Date(row.createdAt).toLocaleString()
+          formatter: (row: MenuItem) => {
+        if (!row.createdAt) return '-'
+        return formatDate(row.createdAt, 'yyyy-MM-dd HH:mm')
       }
     }
   ])

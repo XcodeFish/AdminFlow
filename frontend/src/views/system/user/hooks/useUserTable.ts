@@ -1,6 +1,9 @@
 import { ref, reactive, computed } from 'vue'
 import { getUserList } from '@/api/modules/user'
+import { getDeptTree } from '@/api/modules/dept'
 import type { User, UserQueryParams, Role } from '@/types/user'
+import type { DeptTree } from '@/types/dept'
+import { formatDate } from '@/utils/format'
 
 // 定义表格列类型
 interface TableColumn {
@@ -13,9 +16,11 @@ interface TableColumn {
   prop: string
 }
 
+
 export default function useUserTable() {
   // 列表数据
   const userList = ref<User[]>([])
+  const deptOptions = ref<DeptTree[]>([])
   const loading = ref(false)
   const total = ref(0)
   const roleOptions = ref<Role[]>([])
@@ -45,14 +50,19 @@ export default function useUserTable() {
     }
   }
 
-  // 获取角色选项
-  const fetchRoleOptions = async () => {
-    // 实际项目中，这里应该调用获取角色列表的API
-    roleOptions.value = [
-      { id: '1', roleName: '管理员', roleKey: 'admin', orderNum: 1, status: 1, dataScope: 1 },
-      { id: '2', roleName: '普通用户', roleKey: 'user', orderNum: 2, status: 1, dataScope: 5 },
-      { id: '3', roleName: '开发人员', roleKey: 'dev', orderNum: 3, status: 1, dataScope: 2 }
-    ] as Role[]
+  // 获取部门树数据
+  const fetchDeptTree = async () => {
+    try {
+      loading.value = true
+      const { data } = await getDeptTree()
+      console.log('部门树数据', data);
+      deptOptions.value = data || []
+    } catch (error) {
+      console.error('获取部门树失败', error)
+      ElMessage.error('获取部门树失败')
+    } finally {
+      loading.value = false
+    }
   }
 
   // 页码改变
@@ -83,11 +93,18 @@ export default function useUserTable() {
         { label: '用户名', prop: 'username' },
         { label: '姓名', prop: 'realName' },
         { label: '昵称', prop: 'nickname' },
-        // { label: '部门', prop: 'deptName' },
+        { label: '部门', prop: 'deptName' },
         { label: '手机号码', prop: 'phone' },
         { label: '邮箱', prop: 'email' },
         { label: '状态', prop: 'status', slot: 'status' },
-        { label: '创建时间', prop: 'createdAt' }
+        {
+          label: '创建时间',
+          prop: 'createdAt',
+          formatter: (row: User) => {
+            if (!row.createdAt) return '-'
+            return formatDate(row.createdAt, 'yyyy-MM-dd HH:mm')
+          }
+        }
       ] as TableColumn[]
   )
 
@@ -99,9 +116,10 @@ export default function useUserTable() {
     searchParams,
     tableRowClassName,
     fetchUserList,
-    fetchRoleOptions,
     handleCurrentChange,
     handleSizeChange,
-    columns
+    columns,
+    deptOptions,
+    fetchDeptTree
   }
 }
