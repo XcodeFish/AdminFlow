@@ -254,7 +254,21 @@ export class PermissionService {
     }
 
     const permission = this.permissionRepository.create(dto);
-    return this.permissionRepository.save(permission);
+    await this.permissionRepository.save(permission);
+
+    // 添加权限给超级管理员
+    const adminRole = await this.roleRepository.findOne({
+      where: { roleKey: this.configService.get('app.adminRoleKey', 'admin') },
+      relations: ['permissions'],
+    });
+
+    if (adminRole) {
+      adminRole.permissions.push(permission);
+      await this.roleRepository.save(adminRole);
+      await this.clearRolePermissionCache(adminRole.id);
+    }
+
+    return permission;
   }
 
   /**

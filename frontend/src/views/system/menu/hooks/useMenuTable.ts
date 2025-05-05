@@ -54,6 +54,7 @@ export default function useMenuTable() {
   const fetchMenuList = async () => {
     try {
       loading.value = true
+      console.log('searchParams menu', searchParams)
       const { data } = await getMenuList(searchParams)
 
       if (!data) {

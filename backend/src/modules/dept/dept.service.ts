@@ -33,7 +33,7 @@ export class DepartmentService {
     const queryOptions: any = {
       delFlag: 0,
     };
-    if (status !== undefined) {
+    if (status !== undefined && !isNaN(status)) {
       queryOptions.status = status;
     }
 

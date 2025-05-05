@@ -3,7 +3,8 @@
     :before-close="handleClose" append-to-body>
     <el-form ref="formRef" :model="formData" :rules="rules" label-width="100px">
       <el-form-item label="上级菜单">
-        <TreeSelect v-model="formData.parentId" :data="filteredMenuOptions" placeholder="选择上级菜单" />
+        <TreeSelect :modelValue="formData.parentId === undefined ? null : formData.parentId" :data="filteredMenuOptions"
+          placeholder="选择上级菜单" labelKey="menuName" valueKey="id" rootLabel="顶级菜单" :rootValue="null" :showRoot="true" />
       </el-form-item>
 
       <el-form-item label="菜单类型" required>
@@ -20,7 +21,7 @@
       </el-form-item>
 
       <el-form-item v-if="formData.menuType !== 'F'" label="菜单图标" prop="icon">
-        <IconSelect v-model="formData.icon" />
+        <IconSelect :modelValue="formData.icon === undefined ? null : formData.icon" />
       </el-form-item>
 
       <el-form-item v-if="formData.menuType !== 'F'" label="排序" prop="orderNum">

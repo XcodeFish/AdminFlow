@@ -1,11 +1,14 @@
 <template>
   <el-select v-model="selectedValue" :placeholder="placeholder" clearable :disabled="disabled" @change="handleChange">
-    <el-option v-for="item in normalizedOptions" :key="item.value" :label="item.label" :value="item.value" />
+    <el-option v-for="item in normalizedOptions" :key="item.value ?? '_null_'" :label="item.label" :value="item.value === null ? '' : item.value" />
   </el-select>
 </template>
 
 <script setup lang="ts">
 import { computed, watch } from 'vue'
+
+// 定义常量代表 null 值
+const NULL_VALUE = '__NULL__'
 
 interface TreeNode {
   id: string
@@ -13,11 +16,12 @@ interface TreeNode {
 }
 
 interface TreeOption {
-  value: string
+  value: string | null
   label: string
   disabled?: boolean
 }
 
+// 允许传入根节点选项
 const props = withDefaults(defineProps<{
   modelValue: string | null
   data: TreeNode[]
@@ -25,12 +29,18 @@ const props = withDefaults(defineProps<{
   valueKey?: string
   placeholder?: string
   disabled?: boolean
+  rootLabel?: string          // 新增：允许自定义根节点标签
+  rootValue?: string | null   // 新增：允许自定义根节点值
+  showRoot?: boolean          // 新增：是否显示根节点选项
 }>(), {
-  modelValue: '',
-  labelKey: 'menuName',
+  modelValue: null,
+  labelKey: 'name',
   valueKey: 'id',
   placeholder: '请选择',
-  disabled: false
+  disabled: false,
+  rootLabel: '顶级节点',
+  rootValue: null,
+  showRoot: true
 })
 
 const emit = defineEmits<{
@@ -39,19 +49,21 @@ const emit = defineEmits<{
 }>()
 
 const selectedValue = computed({
-  get: () => props.modelValue,
-  set: (val: string | null) => emit('update:modelValue', val)
+  get: () => props.modelValue === null ? NULL_VALUE : props.modelValue,
+  set: (val: string | null) => emit('update:modelValue', val === NULL_VALUE ? null : val)
 })
 
 // 将树形结构扁平化为选项数组
 const normalizedOptions = computed(() => {
   const result: TreeOption[] = []
 
-  // 根节点
-  result.push({
-    value: '0',
-    label: '顶级菜单'
-  })
+  // 如果需要显示根节点，则添加
+  if (props.showRoot) {
+    result.push({
+      value: props.rootValue === null ? NULL_VALUE : props.rootValue,
+      label: props.rootLabel
+    })
+  }
 
   // 递归处理节点
   const processNode = (nodes: TreeNode[], depth = 0, parentPath = '') => {
@@ -75,7 +87,7 @@ const normalizedOptions = computed(() => {
 })
 
 const handleChange = (value: string | null) => {
-  emit('change', value)
+  emit('change', value === NULL_VALUE ? null : value)
 }
 
 // 监听数据变化

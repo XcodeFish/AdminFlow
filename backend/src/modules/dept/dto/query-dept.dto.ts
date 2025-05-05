@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsEnum, IsString } from 'class-validator';
+import { IsOptional, IsEnum, IsString, IsUUID } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { BaseQueryDto } from '../../../common/dto/base-query.dto';
 
@@ -23,4 +23,13 @@ export class QueryDepartmentDto extends BaseQueryDto {
   @IsEnum([0, 1], { message: '状态值必须是0或1' })
   @Transform(({ value }) => parseInt(value, 10))
   status?: number;
+
+  @ApiProperty({
+    description: '父部门ID',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    required: false,
+  })
+  @IsOptional()
+  @IsUUID(4, { message: '父部门ID必须是有效的UUID' })
+  parentId?: string;
 }

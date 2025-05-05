@@ -25,7 +25,7 @@ import { UpdateDepartmentDto } from './dto/update-dept.dto';
 import { QueryDepartmentDto } from './dto/query-dept.dto';
 import { Result } from '../../core/result/result';
 
-@Controller('api/v1/departments')
+@Controller('departments')
 @ApiTags('部门管理')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, PermissionGuard)

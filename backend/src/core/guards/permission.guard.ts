@@ -32,6 +32,11 @@ export class PermissionGuard implements CanActivate {
       throw new ForbiddenException('未授权访问');
     }
 
+    // 如果是管理员，直接放行
+    if (user.isAdmin === true) {
+      return true;
+    }
+
     // 检查用户是否有需要的权限
     const hasPermission = this.matchPermissions(
       requiredPermissions,
