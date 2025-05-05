@@ -28,7 +28,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { MenuModule } from './modules/menu/menu.module';
 import { TodoModule } from './modules/todo/todo.module';
-
+import { DepartmentModule } from './modules/dept/dept.module';
 // 配置
 import appConfig from './configs/app.config';
 import databaseConfig from './configs/database.config';
@@ -100,6 +100,7 @@ import jwtConfig from './configs/jwt.config';
     PermissionModule,
     MenuModule,
     TodoModule,
+    DepartmentModule,
   ],
   providers: [
     // JWT策略
