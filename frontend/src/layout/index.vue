@@ -55,7 +55,7 @@ import {
 import { useUserStore } from '@/store/modules/user'
 import Sidebar from './components/Sidebar.vue'
 import { globalErrorHandler } from '@/composables/useErrorHandler'
-import UserProfile from '@/components/UserProfile/index.vue'
+import UserProfile from '@/views/profile/index.vue'
 import type { User } from '@/types/user'
 
 const router = useRouter()

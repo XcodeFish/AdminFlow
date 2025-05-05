@@ -3,9 +3,6 @@
  * 解决Vite中动态导入的问题，提供静态导入映射
  */
 
-import { getDynamicComponent } from './dynamic-component-loader'
-import { StaticComponentMap } from './static-component-map'
-import NotFoundComponent  from '@/views/error/404.vue'
 
 // 定义组件函数类型
 type ComponentImport = () => Promise<any>

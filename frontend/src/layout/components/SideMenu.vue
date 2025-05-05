@@ -1,4 +1,4 @@
-<!-- frontend/src/layout/components/SideMenu.vue -->
+
 <template>
   <div class="sidebar-container">
     <el-scrollbar>

@@ -7,7 +7,6 @@ import { usePermissionStore } from '@/store/modules/permission'
 import { autoRefreshToken } from '@/utils/auth-helper'
 import type { CustomRouteRecord } from '@/utils/route-generator'
 import { errorRoutes } from './routes'
-// import { useUIStore } from '@/store/modules/ui';
 
 // 白名单路径 - 不需要认证即可访问
 const WHITE_LIST = ['/login', '/403', '/404', '/500']

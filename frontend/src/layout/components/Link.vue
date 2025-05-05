@@ -1,4 +1,3 @@
-<!-- frontend/src/layout/components/Link.vue -->
 <template>
   <component :is="type" v-bind="linkProps">
     <slot />
@@ -7,7 +6,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RouteLocation } from 'vue-router'
 import { isExternal } from '@/utils/validate'
 
 const props = defineProps({

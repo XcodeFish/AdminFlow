@@ -1,4 +1,3 @@
-<!-- frontend/src/components/UserProfile/components/BasicInfoForm.vue -->
 <template>
   <el-form ref="formRef" :model="formData" :rules="rules" label-width="100px" class="user-form">
     <FormRow>

@@ -2,7 +2,7 @@
   <div v-if="!item.meta || !item.meta.hidden">
     <!-- 渲染单个路由，没有子路由或只有一个子路由 -->
     <template
-      v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
+      v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !(item.meta && item.meta.alwaysShow)">
       <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
         <el-menu-item :index="resolvePath(onlyOneChild.path)">
           <el-icon v-if="onlyOneChild.meta.icon">
@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
 import { useRouter } from 'vue-router'
 import { isExternal } from '@/utils/validate'
