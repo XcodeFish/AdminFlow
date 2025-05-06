@@ -147,13 +147,32 @@ export function setupRouterGuard(router: Router) {
             })
 
             // 再添加所有子路由
+            // childRoutes.forEach((route: CustomRouteRecord) => {
+            //   const { parentName, ...routeConfig } = route // 移除parentName属性
+            //   if (parentName) {
+            //     router.addRoute(parentName, routeConfig)
+            //     console.log(
+            //       `🚩 添加子路由: ${route.path} (${String(route.name)}) -> 父路由: ${parentName}`
+            //     )
+            //   }
+            // })
             childRoutes.forEach((route: CustomRouteRecord) => {
               const { parentName, ...routeConfig } = route // 移除parentName属性
               if (parentName) {
-                router.addRoute(parentName, routeConfig)
-                console.log(
-                  `🚩 添加子路由: ${route.path} (${String(route.name)}) -> 父路由: ${parentName}`
-                )
+                // 检查父路由是否存在
+                if (router.hasRoute(parentName)) {
+                  router.addRoute(parentName, routeConfig)
+                  console.log(
+                    `🚩 添加子路由: ${route.path} (${String(route.name)}) -> 父路由: ${parentName}`
+                  )
+                } else {
+                  // 如果父路由不存在，将其作为顶级路由添加
+                  console.warn(`⚠️ 父路由 ${parentName} 不存在，将 ${route.path} 作为顶级路由添加`)
+                  router.addRoute(routeConfig)
+                }
+              } else {
+                // 没有指定父路由，作为顶级路由添加
+                router.addRoute(routeConfig)
               }
             })
 

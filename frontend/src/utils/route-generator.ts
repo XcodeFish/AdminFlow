@@ -106,8 +106,20 @@ export const transformMenuToRoutes = (
       let routePath = menu.path || `/${menu.id}`
 
       // 如果是子菜单且不以/开头，将其附加到父路径
-      if (parentPath && menu.menuType === 'C' && !routePath.startsWith('/')) {
-        routePath = `${parentPath}/${routePath}`.replace(/\/+/g, '/')
+      // if (parentPath && menu.menuType === 'C' && !routePath.startsWith('/')) {
+      //   routePath = `${parentPath}/${routePath}`.replace(/\/+/g, '/')
+      // }
+      if (menu.menuType === 'C') {
+        if (routePath.startsWith('/')) {
+          // 如果是绝对路径，保持不变
+          routePath = routePath
+        } else if (parentPath) {
+          // 如果是相对路径并且有父路径，将其附加到父路径
+          routePath = `${parentPath}/${routePath}`.replace(/\/+/g, '/')
+        } else {
+          // 如果没有父路径，确保以/开头
+          routePath = `/${routePath}`.replace(/\/+/g, '/')
+        }
       }
 
       // 避免重复的路由路径

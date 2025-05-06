@@ -33,7 +33,11 @@ const SystemComponents: ComponentMapType = {
 
   // API日志管理
   'logger/apiLog/index': () => import('@/views/logger/apiLog/index.vue'),
-  'logger/apiLog': () => import('@/views/logger/apiLog/index.vue')
+  'logger/apiLog': () => import('@/views/logger/apiLog/index.vue'),
+
+  // 日志仪表盘
+  'logger/logDashboard/index': () => import('@/views/logger/logDashboard/index.vue'),
+  'logger/logDashboard': () => import('@/views/logger/logDashboard/index.vue')
 }
 
 // 个人中心相关
@@ -44,8 +48,8 @@ const ProfileComponents: ComponentMapType = {
 
 // 仪表盘相关
 const DashboardComponents: ComponentMapType = {
-  'dashboard/index': () => import('@/views/dashboard/index.vue'),
-  dashboard: () => import('@/views/dashboard/index.vue')
+  'logger/dashboard/index': () => import('@/views/dashboard/index.vue'),
+  'logger/dashboard': () => import('@/views/dashboard/index.vue')
 }
 
 // 组合所有组件映射
