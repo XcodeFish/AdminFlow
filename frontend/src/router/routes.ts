@@ -50,7 +50,7 @@ export const basicRoutes: Array<RouteRecordRaw> = [
         component: () => import('@/views/dashboard/index.vue'),
         meta: {
           title: '仪表盘',
-          icon: 'Dashboard',
+          icon: 'Odometer',
           affix: true,
           requiresAuth: true
         }

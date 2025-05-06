@@ -6,7 +6,7 @@ import { JwtAuthGuard } from '../../core/guards/jwt-auth.guard';
 import { Permissions } from '../../core/decorators/permissions.decorator';
 
 @ApiTags('日志统计分析')
-@Controller('api/v1/logger/dashboard')
+@Controller('logger/dashboard')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class DashboardController {

@@ -10,7 +10,7 @@ import { OperationType } from '../common/enums/logger.enum';
 import { ExcelExportUtil } from '../common/utils/excel.util';
 
 @ApiTags('操作日志管理')
-@Controller('api/v1/logger/operation')
+@Controller('logger/operation')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class OperationLogController {
@@ -36,7 +36,7 @@ export class OperationLogController {
   @Permissions('logger:operation:view')
   async findOne(@Param('id') id: string) {
     const log = await this.operationLogService.findOne(+id);
-    
+
     // 将JSON字符串转换为对象
     if (log) {
       if (log.requestParams) {
@@ -46,7 +46,7 @@ export class OperationLogController {
           // 忽略解析错误
         }
       }
-      
+
       if (log.responseResult) {
         try {
           log.responseResult = JSON.parse(log.responseResult);
@@ -114,7 +114,7 @@ export class OperationLogController {
   async export(@Res() response: Response, @Query() queryDto: OperationLogQueryDto) {
     // 获取符合条件的操作日志数据
     const logs = await this.operationLogService.export(queryDto);
-    
+
     // 使用工具类导出Excel
     await ExcelExportUtil.exportOperationLogs(response, logs);
   }

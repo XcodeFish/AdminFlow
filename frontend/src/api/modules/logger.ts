@@ -18,7 +18,7 @@ import { ApiResponse } from '@/types/api'
  * @param params 查询参数
  */
 export const getOperationLogList = (params?: OperationLogQueryParams) => {
-  return request.get<OperationLogListResponse>('/v1/logger/operation/list', { params })
+  return request.get<OperationLogListResponse>('/v1/logger/operation/list', params)
 }
 
 /**
@@ -60,7 +60,7 @@ export const exportOperationLogs = (params?: OperationLogQueryParams) => {
  * @param params 查询参数
  */
 export const getApiLogList = (params?: ApiLogQueryParams) => {
-  return request.get<ApiLogListResponse>('/v1/logger/api/list', { params })
+  return request.get<ApiLogListResponse>('/v1/logger/api/list', params)
 }
 
 /**
@@ -106,7 +106,7 @@ export const getOperationLogStats = (params: {
   endTime: string
   timeGranularity?: string
 }) => {
-  return request.get<OperationLogStatsResponse>('/v1/logger/dashboard/operation-stats', { params })
+  return request.get<OperationLogStatsResponse>('/v1/logger/dashboard/operation-stats', params)
 }
 
 /**
@@ -118,5 +118,5 @@ export const getApiLogStats = (params: {
   endTime: string
   timeGranularity?: string
 }) => {
-  return request.get<ApiLogStatsResponse>('/v1/logger/dashboard/api-stats', { params })
+  return request.get<ApiLogStatsResponse>('/v1/logger/dashboard/api-stats', params)
 }

@@ -3,8 +3,9 @@
     :before-close="handleClose" append-to-body>
     <el-form ref="formRef" :model="formData" :rules="rules" label-width="100px">
       <el-form-item label="上级菜单">
-        <TreeSelect :modelValue="formData.parentId === undefined ? null : formData.parentId" :data="filteredMenuOptions"
-          placeholder="选择上级菜单" labelKey="menuName" valueKey="id" rootLabel="顶级菜单" :rootValue="null" :showRoot="true" />
+        <TreeSelect :modelValue="formData.parentId === undefined ? null : formData.parentId"
+          @update:modelValue="(val) => formData.parentId = val" :data="filteredMenuOptions" placeholder="选择上级菜单"
+          labelKey="menuName" valueKey="id" rootLabel="顶级菜单" :rootValue="null" :showRoot="true" />
       </el-form-item>
 
       <el-form-item label="菜单类型" required>
@@ -21,7 +22,20 @@
       </el-form-item>
 
       <el-form-item v-if="formData.menuType !== 'F'" label="菜单图标" prop="icon">
-        <IconSelect :modelValue="formData.icon === undefined ? null : formData.icon" />
+        <IconSelect :modelValue="formData.icon === undefined ? null : formData.icon"
+          @update:modelValue="(val) => formData.icon = val" />
+      </el-form-item>
+
+      <!-- 图标预览 -->
+      <el-form-item v-if="formData.menuType !== 'F' && formData.icon" label="图标预览">
+        <div class="icon-preview">
+          <span v-if="isIconify(formData.icon)">
+            <Icon :icon="formData.icon" />
+          </span>
+          <el-icon v-else>
+            <component :is="formData.icon" />
+          </el-icon>
+        </div>
       </el-form-item>
 
       <el-form-item v-if="formData.menuType !== 'F'" label="排序" prop="orderNum">
@@ -90,6 +104,7 @@ import { createMenu, updateMenu, getMenuTree } from '@/api/modules/menu'
 import type { MenuItem, MenuTreeNode, CreateMenuParams, UpdateMenuParams } from '@/types/menu'
 import TreeSelect from '@/components/common/TreeSelect.vue'
 import IconSelect from '@/components/common/IconSelect.vue'
+import { Icon } from '@iconify/vue'
 
 const props = defineProps<{
   visible: boolean
@@ -311,6 +326,11 @@ const filteredMenuOptions = computed(() => {
   return filteredOptions
 })
 
+// 判断是否为Iconify图标
+const isIconify = (icon: string | null) => {
+  return icon ? icon.includes(':') : false
+}
+
 onMounted(() => {
   fetchMenuTree()
 })
@@ -321,5 +341,22 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.icon-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 10px;
+
+  .el-icon,
+  svg {
+    font-size: 32px;
+    color: #409eff;
+  }
 }
 </style>

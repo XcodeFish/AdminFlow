@@ -79,3 +79,12 @@ export function isArray(arg: any): boolean {
   }
   return Array.isArray(arg)
 }
+
+/**
+ * 判断是否为Iconify图标
+ * @param icon 图标名称
+ * @returns 是否为Iconify图标
+ */
+export function isIconify(icon: string): boolean {
+  return icon && icon.includes(':')
+}

@@ -1,47 +1,43 @@
 <template>
   <div class="icon-display">
-    <component :is="resolvedIcon" v-if="icon" class="menu-icon" />
+    <!-- Element Plus 图标 -->
+    <el-icon v-if="icon && !isIconify" class="menu-icon">
+      <component :is="resolvedIcon" />
+    </el-icon>
+
+    <!-- Iconify 图标 -->
+    <Icon v-else-if="icon && isIconify" :icon="icon" class="menu-icon" />
+
+    <!-- 图标名称 -->
     <span class="icon-name" v-if="showName && icon">{{ icon }}</span>
+
+    <!-- 无图标 -->
     <span v-if="!icon" class="no-icon">-</span>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, getCurrentInstance } from 'vue'
+import { computed } from 'vue'
 import * as ElementPlusIcons from '@element-plus/icons-vue'
+import { Icon } from '@iconify/vue'
 
 const props = defineProps<{
   icon: string | null
   showName?: boolean
 }>()
 
-// 解析图标组件
+// 判断是否为Iconify图标
+const isIconify = computed(() => {
+  return props.icon ? props.icon.includes(':') : false
+})
+
+// 解析Element Plus图标组件
 const resolvedIcon = computed(() => {
-  if (!props.icon) return null
+  if (!props.icon || isIconify.value) return null
 
-  // 1. 在Element Plus Icons中查找
+  // 检查是否为Element Plus图标
   if ((ElementPlusIcons as Record<string, any>)[props.icon]) {
-    return (ElementPlusIcons as Record<string, any>)[props.icon]
-  }
-
-  // 2. 尝试从根app实例获取组件
-  const instance = getCurrentInstance()
-  if (instance && instance.appContext.app) {
-    // 尝试从Vue应用实例获取组件
-    try {
-      return instance.appContext.app.component(props.icon)
-    } catch (e) {
-      console.warn('无法从应用实例获取图标组件:', props.icon)
-    }
-  }
-
-  // 3. 尝试使用resolveComponent
-  try {
-    // 尝试使用appContext中的解析方法
-    const comp = instance?.appContext.components[props.icon]
-    if (comp) return comp
-  } catch (e) {
-    console.warn('图标解析失败:', props.icon, e)
+    return props.icon
   }
 
   return null
@@ -56,6 +52,8 @@ const resolvedIcon = computed(() => {
 
   .menu-icon {
     font-size: 18px;
+    width: 1em;
+    height: 1em;
   }
 
   .icon-name {

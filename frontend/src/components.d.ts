@@ -60,6 +60,7 @@ declare module 'vue' {
     ErrorHandlingExample: typeof import('./components/examples/ErrorHandlingExample.vue')['default']
     FormCol: typeof import('./components/common/FormCol.vue')['default']
     FormRow: typeof import('./components/common/FormRow.vue')['default']
+    Icon: typeof import('./components/Icon.vue')['default']
     IconDisplay: typeof import('./components/common/IconDisplay.vue')['default']
     IconSelect: typeof import('./components/common/IconSelect.vue')['default']
     ImageUploader: typeof import('./components/common/ImageUploader.vue')['default']

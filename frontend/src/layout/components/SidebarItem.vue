@@ -5,9 +5,11 @@
       v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !(item.meta && item.meta.alwaysShow)">
       <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
         <el-menu-item :index="resolvePath(onlyOneChild.path)">
-          <el-icon v-if="onlyOneChild.meta.icon">
+          <el-icon v-if="onlyOneChild.meta.icon && !isIconify(onlyOneChild.meta.icon)">
             <component :is="onlyOneChild.meta.icon" />
           </el-icon>
+          <Icon v-else-if="onlyOneChild.meta.icon && isIconify(onlyOneChild.meta.icon)" :icon="onlyOneChild.meta.icon"
+            class="menu-icon" />
           <template #title>
             {{ onlyOneChild.meta.title }}
           </template>
@@ -18,9 +20,11 @@
     <!-- 渲染子菜单 -->
     <el-sub-menu v-else :index="resolvePath(item.path)" popper-append-to-body>
       <template #title>
-        <el-icon v-if="item.meta && item.meta.icon">
+        <el-icon v-if="item.meta && item.meta.icon && !isIconify(item.meta.icon)">
           <component :is="item.meta.icon" />
         </el-icon>
+        <Icon v-else-if="item.meta && item.meta.icon && isIconify(item.meta.icon)" :icon="item.meta.icon"
+          class="menu-icon" />
         <span v-if="item.meta && item.meta.title">{{ item.meta.title }}</span>
       </template>
 
@@ -35,9 +39,10 @@
 import { ref } from 'vue'
 import { RouteRecordRaw } from 'vue-router'
 import { useRouter } from 'vue-router'
-import { isExternal } from '@/utils/validate'
+import { isExternal, isIconify } from '@/utils/validate'
 import AppLink from './Link.vue'
 import { globalErrorHandler } from '@/composables/useErrorHandler'
+import { Icon } from '@iconify/vue'
 
 const router = useRouter()
 
@@ -182,7 +187,9 @@ const navigateTo = (path: string): void => {
 
   .el-menu-item,
   .el-sub-menu__title {
-    .el-icon {
+
+    .el-icon,
+    .menu-icon {
       margin-right: 0;
       margin-left: 0;
       font-size: 18px;
@@ -206,5 +213,12 @@ const navigateTo = (path: string): void => {
       }
     }
   }
+}
+
+.menu-icon {
+  margin-right: 8px;
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
 }
 </style>

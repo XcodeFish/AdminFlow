@@ -10,7 +10,8 @@ import SystemRole from '@/views/system/role/index.vue'
 import SystemDept from '@/views/system/dept/index.vue'
 import Profile from '@/views/profile/index.vue'
 import Dashboard from '@/views/dashboard/index.vue'
-
+import OperationLog from '@/views/logger/operation/index.vue'
+import ApiLog from '@/views/logger/apiLog/index.vue'
 // 创建完整的静态映射对象
 export const StaticComponentMap: Record<string, any> = {
   // 系统管理
@@ -22,6 +23,14 @@ export const StaticComponentMap: Record<string, any> = {
   'system/role': SystemRole,
   'system/dept/index': SystemDept,
   'system/dept': SystemDept,
+
+  // 操作日志管理
+  'logger/operation/index': OperationLog,
+  'logger/operation': OperationLog,
+
+  // API日志管理
+  'logger/apiLog/index': ApiLog,
+  'logger/apiLog': ApiLog,
 
   // 个人中心
   'profile/index': Profile,

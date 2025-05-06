@@ -10,7 +10,7 @@ import { OperationType } from '../common/enums/logger.enum';
 import { ExcelExportUtil } from '../common/utils/excel.util';
 
 @ApiTags('接口日志管理')
-@Controller('api/v1/logger/api')
+@Controller('logger/api')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class ApiLogController {
@@ -36,11 +36,11 @@ export class ApiLogController {
   @Permissions('logger:api:view')
   async findOne(@Param('id') id: string) {
     const log = await this.apiLogService.findOne(+id);
-    
+
     // 将JSON字符串转换为对象
     if (log) {
       const jsonFields = ['requestHeaders', 'requestParams', 'responseHeaders', 'responseBody'];
-      
+
       jsonFields.forEach(field => {
         if (log[field]) {
           try {
@@ -110,7 +110,7 @@ export class ApiLogController {
   async export(@Res() response: Response, @Query() queryDto: ApiLogQueryDto) {
     // 获取符合条件的接口日志数据
     const logs = await this.apiLogService.export(queryDto);
-    
+
     // 使用工具类导出Excel
     await ExcelExportUtil.exportApiLogs(response, logs);
   }

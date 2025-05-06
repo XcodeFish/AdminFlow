@@ -25,7 +25,15 @@ const SystemComponents: ComponentMapType = {
 
   // 部门管理
   'system/dept/index': () => import('@/views/system/dept/index.vue'),
-  'system/dept': () => import('@/views/system/dept/index.vue')
+  'system/dept': () => import('@/views/system/dept/index.vue'),
+
+  // 操作日志管理
+  'logger/operation/index': () => import('@/views/logger/operation/index.vue'),
+  'logger/operation': () => import('@/views/logger/operation/index.vue'),
+
+  // API日志管理
+  'logger/apiLog/index': () => import('@/views/logger/apiLog/index.vue'),
+  'logger/apiLog': () => import('@/views/logger/apiLog/index.vue')
 }
 
 // 个人中心相关
