@@ -27,6 +27,9 @@ import { JwtAuthGuard } from '../../core/guards/jwt-auth.guard';
 import { Roles } from '../../core/decorators/roles.decorator';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
 import { RolesGuard } from '../../core/guards/roles.guard';
+import { OperationLog } from '../../logger/operation-log/decorators/operation-log.decorator';
+import { OperationType } from '../../logger/common/enums/logger.enum';
+
 
 @ApiTags('菜单管理')
 @Controller('system/menu')
@@ -39,6 +42,11 @@ export class MenuController {
   @Roles('admin')
   @ApiOperation({ summary: '创建菜单' })
   @ApiResponse({ status: 201, type: MenuEntity })
+  @OperationLog({
+    module: '菜单管理',
+    operationType: OperationType.INSERT,
+    operationName: '新增菜单',
+  })
   async create(@Body() createMenuDto: CreateMenuDto): Promise<MenuEntity> {
     return this.menuService.create(createMenuDto);
   }
@@ -83,6 +91,11 @@ export class MenuController {
   @Roles('admin')
   @ApiOperation({ summary: '分配角色菜单' })
   @ApiResponse({ status: 200 })
+  @OperationLog({
+    module: '菜单管理',
+    operationType: OperationType.OTHER,
+    operationName: '分配角色菜单',
+  })
   async assignRoleMenus(@Body() assignDto: AssignRoleMenusDto): Promise<void> {
     return this.menuService.assignRoleMenus(assignDto);
   }
@@ -100,6 +113,11 @@ export class MenuController {
   @ApiOperation({ summary: '更新菜单' })
   @ApiParam({ name: 'id', description: '菜单ID' })
   @ApiResponse({ status: 200, type: MenuEntity })
+  @OperationLog({
+    module: '菜单管理',
+    operationType: OperationType.UPDATE,
+    operationName: '更新菜单',
+  })
   async update(
     @Param('id') id: string,
     @Body() updateMenuDto: UpdateMenuDto,
@@ -112,6 +130,11 @@ export class MenuController {
   @ApiOperation({ summary: '删除菜单' })
   @ApiParam({ name: 'id', description: '菜单ID' })
   @ApiResponse({ status: 200 })
+  @OperationLog({
+    module: '菜单管理',
+    operationType: OperationType.DELETE,
+    operationName: '删除菜单',
+  })
   async remove(@Param('id') id: string): Promise<void> {
     return this.menuService.remove(id);
   }

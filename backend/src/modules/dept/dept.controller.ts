@@ -25,6 +25,9 @@ import { UpdateDepartmentDto } from './dto/update-dept.dto';
 import { QueryDepartmentDto } from './dto/query-dept.dto';
 import { Result } from '../../core/result/result';
 
+import { OperationLog } from '../../logger/operation-log/decorators/operation-log.decorator';
+import { OperationType } from '../../logger/common/enums/logger.enum';
+
 @Controller('departments')
 @ApiTags('部门管理')
 @ApiBearerAuth()
@@ -59,6 +62,11 @@ export class DepartmentController {
   @Post('create')
   @ApiOperation({ summary: '创建部门' })
   @RequirePermissions('system:dept:create')
+  @OperationLog({
+    module: '部门管理',
+    operationType: OperationType.INSERT,
+    operationName: '新增部门',
+  })
   async createDept(@Body() createDto: CreateDepartmentDto) {
     const data = await this.departmentService.createDept(createDto);
     return Result.success(data, '创建成功');
@@ -67,6 +75,11 @@ export class DepartmentController {
   @Put(':id/update')
   @ApiOperation({ summary: '更新部门' })
   @RequirePermissions('system:dept:update')
+  @OperationLog({
+    module: '部门管理',
+    operationType: OperationType.UPDATE,
+    operationName: '更新部门',
+  })
   async updateDept(
     @Param('id') id: string,
     @Body() updateDto: UpdateDepartmentDto,
@@ -78,6 +91,11 @@ export class DepartmentController {
   @Delete(':id/delete')
   @ApiOperation({ summary: '删除部门' })
   @RequirePermissions('system:dept:delete')
+  @OperationLog({
+    module: '部门管理',
+    operationType: OperationType.DELETE,
+    operationName: '删除部门',
+  })
   async deleteDept(@Param('id') id: string) {
     await this.departmentService.deleteDept(id);
     return Result.success(null, '删除成功');

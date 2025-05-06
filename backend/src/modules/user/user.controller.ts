@@ -24,6 +24,8 @@ import { UserResponseDto } from './dto/user-response.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { Public } from '../../core/decorators/public.decorator';
+import { OperationLog } from '../../logger/operation-log/decorators/operation-log.decorator';
+import { OperationType } from '../../logger/common/enums/logger.enum';
 
 @ApiTags('用户管理')
 // @ApiBearerAuth()
@@ -38,6 +40,11 @@ export class UserController {
     status: 200,
     description: '用户创建成功',
     type: UserResponseDto,
+  })
+  @OperationLog({
+    module: '用户管理',
+    operationType: OperationType.INSERT,
+    operationName: '新增用户',
   })
   async create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
@@ -69,6 +76,11 @@ export class UserController {
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: '操作成功', type: UserResponseDto })
   @ApiResponse({ status: 404, description: '用户不存在' })
+  @OperationLog({
+    module: '用户管理',
+    operationType: OperationType.UPDATE,
+    operationName: '更新用户',
+  })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(id, updateUserDto);
   }
@@ -78,6 +90,11 @@ export class UserController {
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: '操作成功' })
   @ApiResponse({ status: 404, description: '用户不存在' })
+  @OperationLog({
+    module: '用户管理',
+    operationType: OperationType.DELETE,
+    operationName: '删除用户',
+  })
   async remove(@Param('id') id: string) {
     await this.userService.remove(id);
     return { message: '用户删除成功' };
@@ -88,6 +105,11 @@ export class UserController {
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: '密码重置成功' })
   @ApiResponse({ status: 404, description: '用户不存在' })
+  @OperationLog({
+    module: '用户管理',
+    operationType: OperationType.UPDATE,
+    operationName: '重置密码',
+  })
   async resetPassword(
     @Param('id') id: string,
     @Body() resetPasswordDto: ResetPasswordDto,
@@ -105,6 +127,11 @@ export class UserController {
     type: UserResponseDto,
   })
   @ApiResponse({ status: 404, description: '用户不存在' })
+  @OperationLog({
+    module: '用户管理',
+    operationType: OperationType.UPDATE,
+    operationName: '更新用户状态',
+  })
   async updateStatus(@Param('id') id: string, @Body('status') status: number) {
     return this.userService.updateStatus(id, status);
   }
@@ -115,6 +142,11 @@ export class UserController {
   @ApiResponse({ status: 200, description: '密码修改成功' })
   @ApiResponse({ status: 400, description: '参数错误' })
   @ApiResponse({ status: 400, description: '原密码错误' })
+  @OperationLog({
+    module: '用户管理',
+    operationType: OperationType.UPDATE,
+    operationName: '修改密码',
+  })
   async changePassword(
     @Req() request,
     @Body() changePasswordDto: ChangePasswordDto,

@@ -24,6 +24,9 @@ import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoStatusDto } from './dto/update-todo-status.dto';
 import { QueryTodoDto } from './dto/query-todo.dto';
 
+import { OperationLog } from '../../logger/operation-log/decorators/operation-log.decorator';
+import { OperationType } from '../../logger/common/enums/logger.enum';
+
 @ApiTags('待办事项')
 @Controller('todos')
 @UseGuards(JwtAuthGuard)
@@ -34,6 +37,11 @@ export class TodoController {
   @Post('create')
   @ApiOperation({ summary: '创建待办事项' })
   @ApiResponse({ status: 201, description: '创建成功' })
+  @OperationLog({
+    module: 'TODO管理',
+    operationType: OperationType.INSERT,
+    operationName: '新增待办事项',
+  })
   create(
     @Body() createTodoDto: CreateTodoDto,
     @CurrentUser('userId') userId: string,
@@ -55,6 +63,11 @@ export class TodoController {
   @Patch(':id/update')
   @ApiOperation({ summary: '更新待办事项状态' })
   @ApiResponse({ status: 200, description: '更新成功' })
+  @OperationLog({
+    module: 'TODO管理',
+    operationType: OperationType.UPDATE,
+    operationName: '更新待办事项状态',
+  })
   updateStatus(
     @CurrentUser('userId') userId: string,
     @Param('id') id: string,
@@ -66,6 +79,11 @@ export class TodoController {
   @Delete(':id/delete')
   @ApiOperation({ summary: '删除待办事项' })
   @ApiResponse({ status: 200, description: '删除成功' })
+  @OperationLog({
+    module: 'TODO管理',
+    operationType: OperationType.DELETE,
+    operationName: '删除待办事项',
+  })
   remove(@CurrentUser('userId') userId: string, @Param('id') id: string) {
     return this.todoService.remove(userId, id);
   }

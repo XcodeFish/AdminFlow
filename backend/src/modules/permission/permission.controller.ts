@@ -35,6 +35,9 @@ import { RolesGuard } from '../../core/guards/roles.guard';
 import { Permissions } from '../../core/decorators/permissions.decorator';
 import { Roles } from '../../core/decorators/roles.decorator';
 
+import { OperationLog } from '../../logger/operation-log/decorators/operation-log.decorator';
+import { OperationType } from '../../logger/common/enums/logger.enum';
+
 @ApiTags('权限管理')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -47,6 +50,11 @@ export class PermissionController {
   @Post('roles')
   @ApiOperation({ summary: '创建角色' })
   @Permissions(['system:role:create'])
+  @OperationLog({
+    module: '权限管理',
+    operationType: OperationType.INSERT,
+    operationName: '新增角色',
+  })
   createRole(@Body() createRoleDto: CreateRoleDto) {
     return this.permissionService.createRole(createRoleDto);
   }
@@ -55,6 +63,11 @@ export class PermissionController {
   @ApiOperation({ summary: '更新角色' })
   @ApiParam({ name: 'id', description: '角色ID' })
   @Permissions(['system:role:update'])
+  @OperationLog({
+    module: '权限管理',
+    operationType: OperationType.UPDATE,
+    operationName: '更新角色',
+  })
   updateRole(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateRoleDto: UpdateRoleDto,
@@ -66,6 +79,11 @@ export class PermissionController {
   @ApiOperation({ summary: '删除角色' })
   @ApiParam({ name: 'id', description: '角色ID' })
   @Permissions(['system:role:delete'])
+  @OperationLog({
+    module: '权限管理',
+    operationType: OperationType.DELETE,
+    operationName: '删除角色',
+  })
   deleteRole(@Param('id', ParseUUIDPipe) id: string) {
     return this.permissionService.deleteRole(id);
   }
@@ -88,6 +106,11 @@ export class PermissionController {
   @Put('roles/:roleId/permissions')
   @Permissions(['system:role:permission'])
   @ApiOperation({ summary: '分配角色权限' })
+  @OperationLog({
+    module: '权限管理',
+    operationType: OperationType.UPDATE,
+    operationName: '分配角色权限',
+  })
   assignRolePermissions(
     @Param('roleId', ParseUUIDPipe) roleId: string,
     @Body() dto: AssignRolePermissionsDto,
@@ -149,6 +172,11 @@ export class PermissionController {
   @Permissions(['system:permission:create'])
   @ApiOperation({ summary: '创建权限' })
   @ApiResponse({ status: 201, description: '创建成功' })
+  @OperationLog({
+    module: '权限管理',
+    operationType: OperationType.INSERT,
+    operationName: '新增权限',
+  })
   createPermission(@Body() createPermissionDto: CreatePermissionDto) {
     return this.permissionService.createPermission(createPermissionDto);
   }
@@ -200,6 +228,11 @@ export class PermissionController {
   @Put(':id')
   @Permissions(['system:permission:update'])
   @ApiOperation({ summary: '更新权限' })
+  @OperationLog({
+    module: '权限管理',
+    operationType: OperationType.UPDATE,
+    operationName: '更新权限',
+  })
   updatePermission(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updatePermissionDto: UpdatePermissionDto,
@@ -211,6 +244,11 @@ export class PermissionController {
   @Permissions(['system:permission:delete'])
   @ApiOperation({ summary: '删除权限' })
   @HttpCode(HttpStatus.NO_CONTENT)
+  @OperationLog({
+    module: '权限管理',
+    operationType: OperationType.DELETE,
+    operationName: '删除权限',
+  })
   deletePermission(@Param('id', ParseUUIDPipe) id: string) {
     return this.permissionService.deletePermission(id);
   }
@@ -220,6 +258,11 @@ export class PermissionController {
   @Put('users/:userId/roles')
   @Permissions(['system:user:update'])
   @ApiOperation({ summary: '分配用户角色' })
+  @OperationLog({
+    module: '用户角色管理',
+    operationType: OperationType.UPDATE,
+    operationName: '分配用户角色',
+  })
   assignUserRoles(
     @Param('userId', ParseUUIDPipe) userId: string,
     @Body() dto: AssignUserRolesDto,
