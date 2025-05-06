@@ -29,6 +29,12 @@ import { PermissionModule } from './modules/permission/permission.module';
 import { MenuModule } from './modules/menu/menu.module';
 import { TodoModule } from './modules/todo/todo.module';
 import { DepartmentModule } from './modules/dept/dept.module';
+
+// 日志管理模块
+import { LoggerModule } from './logger/logger.module';
+import { ApiLogInterceptor } from './logger/api-log/interceptors/api-log.interceptor';
+import { ApiExceptionFilter } from './logger/api-log/filters/api-exception.filter';
+
 // 配置
 import appConfig from './configs/app.config';
 import databaseConfig from './configs/database.config';
@@ -101,6 +107,9 @@ import jwtConfig from './configs/jwt.config';
     MenuModule,
     TodoModule,
     DepartmentModule,
+
+    // 日志管理模块
+    LoggerModule,
   ],
   providers: [
     // JWT策略
@@ -118,6 +127,12 @@ import jwtConfig from './configs/jwt.config';
       useClass: LoggingInterceptor,
     },
 
+    // API日志拦截器
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ApiLogInterceptor,
+    },
+
     // 全局异常过滤器
     {
       provide: APP_FILTER,
@@ -128,6 +143,12 @@ import jwtConfig from './configs/jwt.config';
     {
       provide: APP_FILTER,
       useClass: EnhancedExceptionFilter,
+    },
+
+    // API日志异常过滤器
+    {
+      provide: APP_FILTER,
+      useClass: ApiExceptionFilter,
     },
 
     // 全局JWT守卫

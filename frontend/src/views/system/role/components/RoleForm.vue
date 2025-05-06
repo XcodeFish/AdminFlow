@@ -110,18 +110,19 @@ const rules = reactive<FormRules>({
   ]
 })
 
-// 监听roleId变化获取角色信息
-watch(() => props.roleId, async (newVal) => {
-  if (newVal && dialogVisible.value) {
-    await fetchRoleInfo(newVal)
+// 监听对话框可见性
+watch(() => dialogVisible.value, async (visible) => {
+  if (visible && props.roleId) {
+    await fetchRoleInfo(props.roleId)
   }
-}, { immediate: true })
+})
+
 
 // 获取角色信息
 const fetchRoleInfo = async (id: string) => {
   try {
     const res = await getRoleById(id)
-    if (res.code === 0) {
+    if (res.code === 200) {
       const role = res.data
       // 重置表单数据
       Object.assign(formData, {
