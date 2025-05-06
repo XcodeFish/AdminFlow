@@ -16,10 +16,12 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiParam,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../core/guards/jwt-auth.guard';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
 import { TodoService } from './todo.service';
+import { TodoTasksService } from './todo-tasks.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoStatusDto } from './dto/update-todo-status.dto';
 import { QueryTodoDto } from './dto/query-todo.dto';
@@ -32,7 +34,10 @@ import { OperationType } from '../../logger/common/enums/logger.enum';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class TodoController {
-  constructor(private readonly todoService: TodoService) {}
+  constructor(
+    private readonly todoService: TodoService,
+    private readonly todoTasksService: TodoTasksService,
+  ) {}
 
   @Post('create')
   @ApiOperation({ summary: '创建待办事项' })
@@ -86,5 +91,12 @@ export class TodoController {
   })
   remove(@CurrentUser('userId') userId: string, @Param('id') id: string) {
     return this.todoService.remove(userId, id);
+  }
+
+  @Post('check-expired')
+  @ApiOperation({ summary: '手动检查过期待办事项' })
+  async checkExpiredTodos() {
+    await this.todoTasksService.handleExpiredTodos();
+    return { message: '已完成过期待办事项检查' };
   }
 }

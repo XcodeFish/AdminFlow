@@ -104,12 +104,29 @@ const fetchUserInfo = async () => {
 // 退出登录
 const handleLogout = async () => {
   try {
+    // 先保存路由实例的引用，以防logoutAction中清除了$router
+    const routerInstance = router
+
+    // 执行登出操作
     await userStore.logoutAction()
-    router.push('/login')
+
+    // 确保完全刷新URL状态，使用replace避免返回按钮返回到已登出状态
+    try {
+      await routerInstance.replace('/login')
+    } catch (navigationError) {
+      console.error('🚨 路由跳转失败，尝试使用location.href:', navigationError)
+      // 如果路由跳转失败，使用原生方法强制跳转
+      window.location.href = '/login'
+    }
+
+    // 打印调试信息
+    console.log('🚩 用户已登出，已重定向到登录页')
   } catch (error) {
     globalErrorHandler.handleError(error, 'error', {
       showMessage: true
     })
+    // 即使登出失败，也尝试跳转到登录页
+    window.location.href = '/login'
   }
 }
 

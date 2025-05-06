@@ -71,6 +71,7 @@ import { ElMessage } from 'element-plus'
 import { User, Lock, ChatDotRound, Bell, Message } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/modules/user'
 import type { LoginParams } from '@/types/auth'
+import { usePermissionStore } from '@/store/modules/permission'
 
 // 路由实例
 const router = useRouter()
@@ -115,24 +116,90 @@ const handleLogin = async () => {
       await userStore.login(loginForm)
 
       ElMessage.success('登录成功')
-      console.log('登录成功，准备跳转', {
+      console.log('登录成功，准备加载路由权限', {
         token: userStore.token,
         hasUserInfo: Boolean(userStore.userInfo)
       })
 
-      // 跳转到首页或重定向页面
-      const redirect = route.query.redirect as string
+      // 确保权限状态的一致性
+      const permissionStore = usePermissionStore()
 
-      // 添加延迟，让路由系统有时间处理权限
-      setTimeout(() => {
-        if (redirect) {
-          console.log('跳转到重定向页面:', redirect)
-          router.push(redirect)
+      // 强制重置路由状态，确保动态加载
+      if (permissionStore.isDynamicRouteAdded) {
+        console.log('🚩 登录后重置路由状态，确保重新加载')
+        permissionStore.setDynamicRouteAdded(false)
+      }
+
+      // 加载路由权限
+      try {
+        // 手动加载权限路由
+        console.log('🚩 手动加载动态路由权限')
+        const { success, routes } = await permissionStore.loadPermissions()
+
+        if (success && routes && routes.length > 0) {
+          console.log('🚩 动态路由加载成功，路由数量:', routes.length)
+          permissionStore.setDynamicRouteAdded(true)
+
+          // 手动添加路由 - 分类处理父子路由
+          // 先添加父路由
+          const parentRoutes = routes.filter(route => !route.parentName)
+          parentRoutes.forEach(route => {
+            if (route.name && !router.hasRoute(route.name)) {
+              console.log(`🚩 添加父级路由: ${route.path} (${String(route.name)})`)
+              router.addRoute(route)
+            }
+          })
+
+          // 然后添加子路由
+          const childRoutes = routes.filter(route => route.parentName)
+          childRoutes.forEach(route => {
+            if (route.parentName && route.name) {
+              console.log(`🚩 添加子路由: ${route.path} (${String(route.name)}) 到父路由: ${route.parentName}`)
+              router.addRoute(route.parentName, { ...route, parentName: undefined })
+            }
+          })
+
+          // 确保404路由在最后
+          if (router.hasRoute('NotFoundRedirect')) {
+            router.removeRoute('NotFoundRedirect')
+          }
+          router.addRoute({
+            path: '/:pathMatch(.*)*',
+            name: 'NotFoundRedirect',
+            redirect: '/404',
+            meta: { hidden: true }
+          })
+
+          console.log('🚩 路由添加完成，当前路由数量:', router.getRoutes().length)
+
+          // 跳转到首页或重定向页面
+          const redirect = route.query.redirect as string
+
+          // 增加延迟，确保路由已完全注册
+          setTimeout(() => {
+            try {
+              if (redirect && redirect !== '/' && redirect !== '/login') {
+                console.log('🚩 跳转到重定向页面:', redirect)
+                router.replace(redirect)
+              } else {
+                console.log('🚩 跳转到默认首页: /dashboard')
+                router.replace('/dashboard')
+              }
+            } catch (navError) {
+              console.error('🚨 导航失败, 尝试使用location.href:', navError)
+              window.location.href = redirect || '/dashboard'
+            }
+          }, 500)
         } else {
-          console.log('跳转到默认首页: /dashboard')
-          router.push('/dashboard')
+          console.warn('⚠️ 未获取到动态路由，使用默认路由')
+          // 如果没有动态路由，直接跳转到仪表盘
+          router.replace('/dashboard')
         }
-      }, 300)
+      } catch (routeError) {
+        console.error('🚨 加载路由权限失败:', routeError)
+        // 路由加载失败，但仍然跳转到仪表盘（基础路由）
+        router.replace('/dashboard')
+      }
     } catch (error: any) {
       // 登录失败处理
       console.error('登录失败:', error)

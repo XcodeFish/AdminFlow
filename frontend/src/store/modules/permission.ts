@@ -249,17 +249,40 @@ export const usePermissionStore = defineStore('permission', {
      */
     async loadPermissions() {
       try {
+        console.log('🚩 开始加载权限和动态路由')
+
         // 重置路由处理状态，避免重复路径问题
         resetRouteProcessingState()
+
+        // 确保动态路由未添加标志
+        this.isDynamicRouteAdded = false
 
         // 加载动态路由
         let routes = []
 
-        // 优先使用菜单树生成路由
-        routes = await this.generateRoutesFromMenuTree()
+        try {
+          // 优先使用菜单树生成路由
+          routes = await this.generateRoutesFromMenuTree()
+
+          if (routes.length === 0) {
+            console.warn('⚠️ 菜单树生成的路由为空，尝试从用户菜单生成')
+            routes = await this.generateRoutesFromUserMenus()
+          }
+
+          console.log('🚩 成功生成动态路由，数量:', routes.length)
+        } catch (error) {
+          console.error('🚨 生成动态路由失败:', error)
+          this.fallbackToLocalRoutes = true
+          routes = []
+        }
 
         // 处理错误路由
         this.handleErrorRoutes()
+
+        // 将生成的动态路由保存到状态
+        if (routes.length > 0) {
+          this.setRoutes(routes)
+        }
 
         // 返回加载结果
         return {
@@ -270,7 +293,8 @@ export const usePermissionStore = defineStore('permission', {
         console.error('🚨 加载权限失败:', error)
         return {
           success: false,
-          error: error
+          error: error,
+          routes: []
         }
       }
     },
@@ -317,6 +341,10 @@ export const usePermissionStore = defineStore('permission', {
 
       // 重置路由
       resetRouter()
+
+      // 确保localStorage中的状态也被清除
+      localStorage.removeItem('permission-store')
+      console.log('🚩 权限状态已重置，isDynamicRouteAdded:', this.isDynamicRouteAdded)
     }
   }
 })

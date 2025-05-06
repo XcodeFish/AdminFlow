@@ -135,12 +135,24 @@ export const useUserStore = defineStore('user', {
 
     async logoutAction(): Promise<void> {
       try {
-        // 尝试调用登出接口
-        await logout()
-      } catch (error) {
-        console.error('登出接口调用失败:', error)
-        // 即使接口调用失败，也继续执行登出流程
-      } finally {
+        // 先重置权限存储 - 在清除用户数据之前重置路由
+        const permissionStore = usePermissionStore()
+        console.log('🚩 登出前的isDynamicRouteAdded状态:', permissionStore.isDynamicRouteAdded)
+
+        // 先执行路由重置
+        permissionStore.resetState()
+
+        // 确保isDynamicRouteAdded状态被重置
+        permissionStore.setDynamicRouteAdded(false)
+
+        // 然后尝试调用登出接口
+        try {
+          await logout()
+        } catch (error) {
+          console.error('登出接口调用失败:', error)
+          // 即使接口调用失败，也继续执行登出流程
+        }
+
         // 清除用户数据
         this.clearToken()
         this.userInfo = {}
@@ -156,15 +168,14 @@ export const useUserStore = defineStore('user', {
           this.rememberMe = false
         }
 
-        // 重置权限存储
-        const permissionStore = usePermissionStore()
-        permissionStore.resetState()
-
-        // 重置其他可能的存储（如果有）
-
-        // 清除localStorage中可能的其他数据
+        // 清除localStorage中的状态数据
         localStorage.removeItem('user-store')
         localStorage.removeItem('permission-store')
+
+        console.log('🚩 用户已完全登出，路由和权限状态已重置')
+      } catch (error) {
+        console.error('🚨 登出操作发生错误:', error)
+        throw error
       }
     },
 

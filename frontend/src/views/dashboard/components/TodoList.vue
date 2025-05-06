@@ -21,6 +21,7 @@
           <el-tag v-if="row.status === TodoStatus.PENDING" type="info" effect="plain">未完成</el-tag>
           <el-tag v-else-if="row.status === TodoStatus.COMPLETED" type="success" effect="plain">已完成</el-tag>
           <el-tag v-else-if="row.status === TodoStatus.CANCELLED" type="info" effect="plain">已取消</el-tag>
+          <el-tag v-else-if="row.status === TodoStatus.EXPIRED" type="warning" effect="plain">已过期</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="160" align="center">

@@ -78,11 +78,16 @@ const deptName = computed(() => {
 })
 
 // 监听userId变化获取用户信息
-watch(() => [props.userId, props.visible], async ([id, visible]) => {
-  if (typeof id === 'string' && id && visible) {
-    await fetchUserInfo(id)
-  }
-}, { immediate: true })
+const unwatchUser = watch(
+  () => [props.userId, props.visible],
+  (newValues) => {
+    const [id, visible] = newValues
+    if (typeof id === 'string' && id && visible) {
+      fetchUserInfo(id)
+    }
+  },
+  { immediate: true }
+)
 
 // 获取用户信息
 const fetchUserInfo = async (id: string) => {

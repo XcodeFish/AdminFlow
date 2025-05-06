@@ -75,7 +75,8 @@ export function setupRouterGuard(router: Router) {
       redirectsCount.clear()
       return next({
         path: '/login',
-        query: { redirect: to.path, ...to.query }
+        query: to.path !== '/' && to.path !== '/dashboard' ? { redirect: to.path } : {},
+        replace: true
       })
     }
 
@@ -106,6 +107,13 @@ export function setupRouterGuard(router: Router) {
 
       // 动态路由处理
       const permissionStore = usePermissionStore()
+
+      // 检查异常状态：如果标记为已添加但没有实际路由
+      if (permissionStore.isDynamicRouteAdded && permissionStore.dynamicRoutes.length === 0) {
+        console.warn('⚠️ 检测到异常状态：isDynamicRouteAdded为true但没有动态路由，尝试修复...')
+        permissionStore.isDynamicRouteAdded = false
+      }
+
       if (!permissionStore.isDynamicRouteAdded) {
         try {
           console.log('🚩 开始加载动态路由...')

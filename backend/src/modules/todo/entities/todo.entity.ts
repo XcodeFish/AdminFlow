@@ -18,7 +18,7 @@ export class TodoEntity {
   startTime: Date;
 
   @Column({
-    comment: '状态(0:未完成, 1:已完成, 2:已取消)',
+    comment: '状态(0:未完成, 1:已完成, 2:已取消, 3:已过期)',
     type: 'tinyint',
     default: 0,
   })

@@ -4,7 +4,8 @@
 export enum TodoStatus {
   PENDING = 0, // 未完成
   COMPLETED = 1, // 已完成
-  CANCELLED = 2 // 已取消
+  CANCELLED = 2, // 已取消
+  EXPIRED = 3 // 已过期
 }
 
 /**
@@ -34,31 +35,28 @@ export interface TodoResponse {
  */
 
 export interface CreateTodoResponse {
-  code?:  number,
-  data: TodoItem,
-  message?: string,
+  code?: number
+  data: TodoItem
+  message?: string
   timestamp?: string
 }
 
 export interface UpdateTodoResponse {
-  code?:  number,
-  data: TodoItem,
-  message?: string,
+  code?: number
+  data: TodoItem
+  message?: string
   timestamp?: string
 }
-
-
 
 /**
  * 待办事项分页响应
  */
 export interface TodoPaginationResponse {
-  list: TodoItem[],
+  list: TodoItem[]
   total: number
   page: number
   pageSize: number
   totalPages: number
-
 }
 
 /**
