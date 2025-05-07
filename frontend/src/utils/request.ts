@@ -199,7 +199,7 @@ class HttpClient {
               break
 
             case 403:
-              if (error.config.url.baseURL('api')) {
+              if (error.config.url && error.config.url.includes('api')) {
                 eventBus.emit(RequestEvent.FORBIDDEN, error)
                 return Promise.reject(error)
               }
@@ -208,7 +208,7 @@ class HttpClient {
 
             case 404:
               // 如果是API调用，只记录错误，不重定向
-              if (error.config.url.baseURL('api')) {
+              if (error.config.url && error.config.url.includes('api')) {
                 eventBus.emit(RequestEvent.NOT_FOUND, error)
                 return Promise.reject(error)
               }
@@ -216,7 +216,7 @@ class HttpClient {
               break
 
             case 500:
-              if (error.config.url.baseURL('api')) {
+              if (error.config.url && error.config.url.includes('api')) {
                 eventBus.emit(RequestEvent.SERVER_ERROR, error)
                 return Promise.reject(error)
               }

@@ -82,8 +82,11 @@
         </el-radio-group>
       </el-form-item>
 
-      <el-form-item v-if="formData.menuType !== 'M'" label="权限标识" prop="perms">
+      <el-form-item label="权限标识" prop="perms">
         <el-input v-model="formData.perms" placeholder="请输入权限标识" maxlength="100" />
+      </el-form-item>
+      <el-form-item label="备注" prop="remark">
+        <el-input v-model="formData.remark" placeholder="请输入备注" maxlength="100" />
       </el-form-item>
     </el-form>
 

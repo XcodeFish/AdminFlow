@@ -10,11 +10,19 @@ import {
   Query,
   StreamableFile,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { Response } from 'express';
 import * as fs from 'fs-extra';
 import { GeneratorService } from './services/generator.service';
 import { GenerateOptionsDto } from './dto/generate-options.dto';
 
+@ApiTags('代码生成器-代码生成')
+@ApiBearerAuth()
 @Controller('generator/generate')
 export class GenerateController {
   private readonly logger = new Logger(GenerateController.name);
@@ -22,6 +30,8 @@ export class GenerateController {
   constructor(private readonly generatorService: GeneratorService) {}
 
   @Get('preview/:configId')
+  @ApiOperation({ summary: '预览代码生成结果' })
+  @ApiResponse({ status: 200, description: '预览成功' })
   async preview(@Param('configId', ParseIntPipe) configId: number) {
     this.logger.log(`预览代码生成, 配置ID: ${configId}`);
     const result = await this.generatorService.preview(configId);
@@ -34,6 +44,8 @@ export class GenerateController {
   }
 
   @Post('deploy/:configId')
+  @ApiOperation({ summary: '生成并部署代码' })
+  @ApiResponse({ status: 200, description: '部署成功' })
   async deploy(
     @Param('configId', ParseIntPipe) configId: number,
     @Body('options') options?: GenerateOptionsDto,
@@ -51,6 +63,8 @@ export class GenerateController {
   }
 
   @Get('download/:configId')
+  @ApiOperation({ summary: '下载生成的代码' })
+  @ApiResponse({ status: 200, description: '下载成功', type: StreamableFile })
   async download(
     @Param('configId', ParseIntPipe) configId: number,
     @Query('type') type: 'all' | 'frontend' | 'backend' = 'all',
@@ -78,6 +92,8 @@ export class GenerateController {
   }
 
   @Get('task-status/:taskId')
+  @ApiOperation({ summary: '获取生成任务状态' })
+  @ApiResponse({ status: 200, description: '查询成功' })
   async getTaskStatus(@Param('taskId') taskId: string) {
     this.logger.log(`获取任务状态, 任务ID: ${taskId}`);
     const result = await this.generatorService.getTaskStatus(taskId);
