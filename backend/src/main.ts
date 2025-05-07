@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
+import { json } from 'express';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -68,6 +69,9 @@ async function bootstrap() {
       },
     }),
   );
+
+  // 增加请求体大小限制，支持代码生成器的文件传输
+  app.use(json({ limit: '50mb' }));
 
   // Swagger API 文档
   if (configService.get('app.enableSwagger', true)) {

@@ -40,6 +40,7 @@ import { OperationLogInterceptor } from './logger/operation-log/interceptors/ope
 import appConfig from './configs/app.config';
 import databaseConfig from './configs/database.config';
 import jwtConfig from './configs/jwt.config';
+import { GeneratorModule } from './generator/generator.module';
 
 @Module({
   imports: [
@@ -111,6 +112,9 @@ import jwtConfig from './configs/jwt.config';
 
     // 日志管理模块
     LoggerModule,
+
+    // 代码生成器模块
+    GeneratorModule,
   ],
   providers: [
     // JWT策略
