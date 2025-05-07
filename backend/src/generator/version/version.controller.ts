@@ -11,7 +11,7 @@ import {
 import { VersionService } from './services/version.service';
 import { QueryVersionDto } from './dto/query-version.dto';
 
-@Controller('api/v1/generator/versions')
+@Controller('generator/versions')
 export class VersionController {
   private readonly logger = new Logger(VersionController.name);
 
@@ -28,11 +28,12 @@ export class VersionController {
     );
     const query: QueryVersionDto = { configId, page, limit };
     const result = await this.versionService.findAll(query);
-    return {
-      code: 200,
-      message: '操作成功',
-      data: result,
-    };
+    // return {
+    //   code: 200,
+    //   message: '操作成功',
+    //   data: result,
+    // };
+    return result;
   }
 
   @Post(':configId/snapshot')
@@ -45,21 +46,23 @@ export class VersionController {
       configId,
       description,
     );
-    return {
-      code: 200,
-      message: '创建快照成功',
-      data: version,
-    };
+    // return {
+    //   code: 200,
+    //   message: '创建快照成功',
+    //   data: version,
+    // };
+    return version;
   }
 
   @Post(':versionId/rollback')
   async rollback(@Param('versionId', ParseIntPipe) versionId: number) {
     this.logger.log(`回滚版本, 版本ID: ${versionId}`);
     const result = await this.versionService.rollback(versionId);
-    return {
-      code: 200,
-      message: '回滚成功',
-      data: result,
-    };
+    // return {
+    //   code: 200,
+    //   message: '回滚成功',
+    //   data: result,
+    // };
+    return result;
   }
 }

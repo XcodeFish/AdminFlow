@@ -15,7 +15,7 @@ import * as fs from 'fs-extra';
 import { GeneratorService } from './services/generator.service';
 import { GenerateOptionsDto } from './dto/generate-options.dto';
 
-@Controller('api/v1/generator/generate')
+@Controller('generator/generate')
 export class GenerateController {
   private readonly logger = new Logger(GenerateController.name);
 
@@ -25,11 +25,12 @@ export class GenerateController {
   async preview(@Param('configId', ParseIntPipe) configId: number) {
     this.logger.log(`预览代码生成, 配置ID: ${configId}`);
     const result = await this.generatorService.preview(configId);
-    return {
-      code: 200,
-      message: '操作成功',
-      data: result,
-    };
+    // return {
+    //   code: 200,
+    //   message: '操作成功',
+    //   data: result,
+    // };
+    return result;
   }
 
   @Post('deploy/:configId')
@@ -41,11 +42,12 @@ export class GenerateController {
       `部署代码, 配置ID: ${configId}, 选项: ${JSON.stringify(options)}`,
     );
     const result = await this.generatorService.deploy(configId, options);
-    return {
-      code: 200,
-      message: '生成并部署成功',
-      data: result,
-    };
+    // return {
+    //   code: 200,
+    //   message: '生成并部署成功',
+    //   data: result,
+    // };
+    return result;
   }
 
   @Get('download/:configId')
@@ -79,10 +81,11 @@ export class GenerateController {
   async getTaskStatus(@Param('taskId') taskId: string) {
     this.logger.log(`获取任务状态, 任务ID: ${taskId}`);
     const result = await this.generatorService.getTaskStatus(taskId);
-    return {
-      code: 200,
-      message: '操作成功',
-      data: result,
-    };
+    // return {
+    //   code: 200,
+    //   message: '操作成功',
+    //   data: result,
+    // };
+    return result;
   }
 }

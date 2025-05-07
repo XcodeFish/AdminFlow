@@ -18,7 +18,7 @@ import { TestConnectionDto } from './dto/test-connection.dto';
 import { QueryDatasourceDto } from './dto/query-datasource.dto';
 import { QueryTablesDto } from './dto/query-tables.dto';
 
-@Controller('api/v1/generator/datasources')
+@Controller('generator/datasources')
 export class DatasourceController {
   private readonly logger = new Logger(DatasourceController.name);
 
@@ -31,33 +31,36 @@ export class DatasourceController {
   async create(@Body() createDatasourceDto: CreateDatasourceDto) {
     this.logger.log(`创建数据源: ${createDatasourceDto.name}`);
     const datasource = await this.datasourceService.create(createDatasourceDto);
-    return {
-      code: 200,
-      message: '创建成功',
-      data: datasource,
-    };
+    // return {
+    //   code: 200,
+    //   message: '创建成功',
+    //   data: datasource,
+    // };
+    return datasource;
   }
 
   @Get()
   async findAll(@Query() query: QueryDatasourceDto) {
     this.logger.log(`获取数据源列表, 查询参数: ${JSON.stringify(query)}`);
     const result = await this.datasourceService.findAll(query);
-    return {
-      code: 200,
-      message: '操作成功',
-      data: result,
-    };
+    // return {
+    //   code: 200,
+    //   message: '操作成功',
+    //   data: result,
+    // };
+    return result;
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     this.logger.log(`获取数据源详情, ID: ${id}`);
     const datasource = await this.datasourceService.findOne(id);
-    return {
-      code: 200,
-      message: '操作成功',
-      data: datasource,
-    };
+    // return {
+    //   code: 200,
+    //   message: '操作成功',
+    //   data: datasource,
+    // };
+    return datasource;
   }
 
   @Put(':id')
@@ -70,22 +73,24 @@ export class DatasourceController {
       id,
       updateDatasourceDto,
     );
-    return {
-      code: 200,
-      message: '更新成功',
-      data: datasource,
-    };
+    // return {
+    //   code: 200,
+    //   message: '更新成功',
+    //   data: datasource,
+    // };
+    return datasource;
   }
 
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number) {
     this.logger.log(`删除数据源, ID: ${id}`);
     await this.datasourceService.remove(id);
-    return {
-      code: 200,
-      message: '删除成功',
-      data: null,
-    };
+    // return {
+    //   code: 200,
+    //   message: '删除成功',
+    //   data: null,
+    // };
+    return null;
   }
 
   @Post('test-connection')
@@ -96,11 +101,12 @@ export class DatasourceController {
     const result = await this.datasourceService.testConnection(
       testConnectionDto,
     );
-    return {
-      code: 200,
-      message: '连接成功',
-      data: result,
-    };
+    // return {
+    //   code: 200,
+    //   message: '连接成功',
+    //   data: result,
+    // };
+    return result;
   }
 
   @Get(':id/tables')
@@ -112,11 +118,12 @@ export class DatasourceController {
       `获取数据库表列表, 数据源ID: ${id}, 查询参数: ${JSON.stringify(query)}`,
     );
     const result = await this.metadataService.getTables(id, query);
-    return {
-      code: 200,
-      message: '操作成功',
-      data: result,
-    };
+    // return {
+    //   code: 200,
+    //   message: '操作成功',
+    //   data: result,
+    // };
+    return result;
   }
 
   @Get(':datasourceId/tables/:tableName')
@@ -131,10 +138,11 @@ export class DatasourceController {
       datasourceId,
       tableName,
     );
-    return {
-      code: 200,
-      message: '操作成功',
-      data: result,
-    };
+    // return {
+    //   code: 200,
+    //   message: '操作成功',
+    //   data: result,
+    // };
+    return result;
   }
 }

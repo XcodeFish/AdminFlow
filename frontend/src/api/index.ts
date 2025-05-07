@@ -6,6 +6,7 @@ import * as role from './modules/role'
 import * as permission from './modules/permission'
 import * as todo from './modules/todo'
 import * as logger from './modules/logger'
+import * as generator from './modules/generator'
 
 export default {
   auth,
@@ -15,5 +16,6 @@ export default {
   role,
   permission,
   todo,
-  logger
+  logger,
+  generator
 }

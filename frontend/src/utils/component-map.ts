@@ -3,7 +3,6 @@
  * 解决Vite中动态导入的问题，提供静态导入映射
  */
 
-
 // 定义组件函数类型
 type ComponentImport = () => Promise<any>
 // 定义组件映射类型
@@ -27,6 +26,9 @@ const SystemComponents: ComponentMapType = {
   'system/dept/index': () => import('@/views/system/dept/index.vue'),
   'system/dept': () => import('@/views/system/dept/index.vue'),
 
+}
+
+const LoggerComponents: ComponentMapType = {
   // 操作日志管理
   'logger/operation/index': () => import('@/views/logger/operation/index.vue'),
   'logger/operation': () => import('@/views/logger/operation/index.vue'),
@@ -38,6 +40,37 @@ const SystemComponents: ComponentMapType = {
   // 日志仪表盘
   'logger/logDashboard/index': () => import('@/views/logger/logDashboard/index.vue'),
   'logger/logDashboard': () => import('@/views/logger/logDashboard/index.vue')
+}
+
+// 代码生成器相关页面
+const GeneratorComponents: ComponentMapType = {
+  // 代码生成器主页
+  'generator/index': () => import('@/views/generator/index.vue'),
+  generator: () => import('@/views/generator/index.vue'),
+
+  // 数据源管理模块
+  'generator/datasource/index': () => import('@/views/generator/datasource/index.vue'),
+  'generator/datasource': () => import('@/views/generator/datasource/index.vue'),
+
+  // 表结构管理模块
+  'generator/table/index': () => import('@/views/generator/table/index.vue'),
+  'generator/table': () => import('@/views/generator/table/index.vue'),
+
+  // 代码生成向导模块
+  'generator/wizard/index': () => import('@/views/generator/wizard/index.vue'),
+  'generator/wizard': () => import('@/views/generator/wizard/index.vue'),
+
+  // 配置管理模块
+  'generator/config/index': () => import('@/views/generator/config/index.vue'),
+  'generator/config': () => import('@/views/generator/config/index.vue'),
+
+  // 代码预览模块
+  'generator/preview/index': () => import('@/views/generator/preview/index.vue'),
+  'generator/preview': () => import('@/views/generator/preview/index.vue'),
+
+  // 版本管理模块
+  'generator/version/index': () => import('@/views/generator/version/index.vue'),
+  'generator/version': () => import('@/views/generator/version/index.vue')
 }
 
 // 个人中心相关
@@ -56,7 +89,9 @@ const DashboardComponents: ComponentMapType = {
 export const ComponentMap: ComponentMapType = {
   ...SystemComponents,
   ...ProfileComponents,
-  ...DashboardComponents
+  ...DashboardComponents,
+  ...GeneratorComponents,
+  ...LoggerComponents
 }
 
 /**

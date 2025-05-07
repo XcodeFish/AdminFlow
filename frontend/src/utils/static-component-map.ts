@@ -13,6 +13,16 @@ import Dashboard from '@/views/dashboard/index.vue'
 import OperationLog from '@/views/logger/operation/index.vue'
 import ApiLog from '@/views/logger/apiLog/index.vue'
 import LoggerDashboard from '@/views/logger/dashboard/index.vue'
+
+// 导入代码生成器相关组件
+import Generator from '@/views/generator/index.vue'
+import GeneratorDatasource from '@/views/generator/datasource/index.vue'
+import GeneratorTable from '@/views/generator/table/index.vue'
+import GeneratorWizard from '@/views/generator/wizard/index.vue'
+import GeneratorConfig from '@/views/generator/config/index.vue'
+import GeneratorPreview from '@/views/generator/preview/index.vue'
+import GeneratorVersion from '@/views/generator/version/index.vue'
+
 // 创建完整的静态映射对象
 export const StaticComponentMap: Record<string, any> = {
   // 系统管理
@@ -43,7 +53,35 @@ export const StaticComponentMap: Record<string, any> = {
 
   // 仪表盘
   'dashboard/index': Dashboard,
-  dashboard: Dashboard
+  dashboard: Dashboard,
+
+  // 代码生成器相关
+  'generator/index': Generator,
+  generator: Generator,
+
+  // 数据源管理模块
+  'generator/datasource/index': GeneratorDatasource,
+  'generator/datasource': GeneratorDatasource,
+
+  // 表结构管理模块
+  'generator/table/index': GeneratorTable,
+  'generator/table': GeneratorTable,
+
+  // 代码生成向导模块
+  'generator/wizard/index': GeneratorWizard,
+  'generator/wizard': GeneratorWizard,
+
+  // 配置管理模块
+  'generator/config/index': GeneratorConfig,
+  'generator/config': GeneratorConfig,
+
+  // 代码预览模块
+  'generator/preview/index': GeneratorPreview,
+  'generator/preview': GeneratorPreview,
+
+  // 版本管理模块
+  'generator/version/index': GeneratorVersion,
+  'generator/version': GeneratorVersion
 }
 
 export default StaticComponentMap
