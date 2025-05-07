@@ -258,7 +258,7 @@ export const usePermissionStore = defineStore('permission', {
         this.isDynamicRouteAdded = false
 
         // 加载动态路由
-        let routes = []
+        let routes: RouteRecordRaw[] = []
 
         try {
           // 优先使用菜单树生成路由
