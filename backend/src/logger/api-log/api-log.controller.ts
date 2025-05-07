@@ -22,12 +22,13 @@ export class ApiLogController {
   @Permissions('logger:api:view')
   async findAll(@Query() queryDto: ApiLogQueryDto) {
     const result = await this.apiLogService.findAll(queryDto);
-    return {
-      code: 200,
-      message: '操作成功',
-      data: result,
-      timestamp: Date.now()
-    };
+    // return {
+    //   code: 200,
+    //   message: '操作成功',
+    //   data: result,
+    //   timestamp: Date.now()
+    // };
+    return result;
   }
 
   @Get(':id')
@@ -52,12 +53,13 @@ export class ApiLogController {
       });
     }
 
-    return {
-      code: 200,
-      message: '操作成功',
-      data: log,
-      timestamp: Date.now()
-    };
+      // return {
+      //   code: 200,
+      //   message: '操作成功',
+      //   data: log,
+      //   timestamp: Date.now()
+      // };
+      return log;
   }
 
   @Delete('')
@@ -71,12 +73,13 @@ export class ApiLogController {
   })
   async remove(@Body() deleteDto: DeleteApiLogDto) {
     const result = await this.apiLogService.remove(deleteDto);
-    return {
-      code: 200,
-      message: '删除成功',
-      data: result,
-      timestamp: Date.now()
-    };
+    // return {
+    //   code: 200,
+    //   message: '删除成功',
+    //   data: result,
+    //     timestamp: Date.now()
+    //   };
+       return result;
   }
 
   @Delete('clean')

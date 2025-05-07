@@ -22,12 +22,13 @@ export class OperationLogController {
   @Permissions('logger:operation:view')
   async findAll(@Query() queryDto: OperationLogQueryDto) {
     const result = await this.operationLogService.findAll(queryDto);
-    return {
-      code: 200,
-      message: '操作成功',
-      data: result,
-      timestamp: Date.now()
-    };
+    // return {
+    //   code: 200,
+    //   message: '操作成功',
+    //   data: result,
+    //   timestamp: Date.now()
+    // };
+    return result;
   }
 
   @Get(':id')
@@ -56,12 +57,13 @@ export class OperationLogController {
       }
     }
 
-    return {
-      code: 200,
-      message: '操作成功',
-      data: log,
-      timestamp: Date.now()
-    };
+    // return {
+    //   code: 200,
+    //   message: '操作成功',
+    //   data: log,
+    //   timestamp: Date.now()
+    // };
+    return log;
   }
 
   @Delete('')
@@ -75,12 +77,13 @@ export class OperationLogController {
   })
   async remove(@Body() deleteDto: DeleteOperationLogDto) {
     const result = await this.operationLogService.remove(deleteDto);
-    return {
-      code: 200,
-      message: '删除成功',
-      data: result,
-      timestamp: Date.now()
-    };
+    // return {
+    //   code: 200,
+    //   message: '删除成功',
+    //   data: result,
+    //   timestamp: Date.now()
+    // };
+    return result;
   }
 
   @Delete('clean')
@@ -94,12 +97,13 @@ export class OperationLogController {
   })
   async clean() {
     await this.operationLogService.clean();
-    return {
-      code: 200,
-      message: '清空成功',
-      data: null,
-      timestamp: Date.now()
-    };
+    // return {
+    //   code: 200,
+    //   message: '清空成功',
+    //   data: null,
+    //   timestamp: Date.now()
+    // };
+    return null;
   }
 
   @Get('export')

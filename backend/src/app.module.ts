@@ -34,6 +34,7 @@ import { DepartmentModule } from './modules/dept/dept.module';
 import { LoggerModule } from './logger/logger.module';
 import { ApiLogInterceptor } from './logger/api-log/interceptors/api-log.interceptor';
 import { ApiExceptionFilter } from './logger/api-log/filters/api-exception.filter';
+import { OperationLogInterceptor } from './logger/operation-log/interceptors/operation-log.interceptor';
 
 // 配置
 import appConfig from './configs/app.config';
@@ -131,6 +132,12 @@ import jwtConfig from './configs/jwt.config';
     {
       provide: APP_INTERCEPTOR,
       useClass: ApiLogInterceptor,
+    },
+
+    // 操作日志拦截器
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: OperationLogInterceptor,
     },
 
     // 全局异常过滤器

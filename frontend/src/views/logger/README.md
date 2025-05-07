@@ -24,14 +24,14 @@ src/views/logger/
 │       ├── LogTable.vue         # 操作日志表格组件
 │       ├── LogSearch.vue        # 操作日志搜索组件
 │       └── LogDetail.vue        # 操作日志详情组件
-├── api/                         # 接口日志管理
+├── apiLog/                         # 接口日志管理
 │   ├── index.vue                # 接口日志列表页
 │   ├── detail.vue               # 接口日志详情页
 │   └── components/              # 组件目录
 │       ├── LogTable.vue         # 接口日志表格组件
 │       ├── LogSearch.vue        # 接口日志搜索组件
 │       └── LogDetail.vue        # 接口日志详情组件
-└── dashboard/                   # 日志分析统计
+└── logDashboard/                   # 日志分析统计
     ├── index.vue                # 统计分析页面
     └── components/              # 组件目录
         ├── OperationStats.vue   # 操作日志统计组件

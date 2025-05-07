@@ -18,12 +18,13 @@ export class DashboardController {
   @Permissions('logger:view')
   async getOperationStats(@Query() queryDto: LogStatsQueryDto) {
     const stats = await this.dashboardService.getOperationStats(queryDto);
-    return {
-      code: 200,
-      message: '操作成功',
-      data: stats,
-      timestamp: Date.now()
-    };
+    // return {
+    //   code: 200,
+    //   message: '操作成功',
+    //   data: stats,
+    //   timestamp: Date.now()
+    // };
+    return stats;
   }
 
   @Get('api-stats')
@@ -32,11 +33,12 @@ export class DashboardController {
   @Permissions('logger:view')
   async getApiStats(@Query() queryDto: LogStatsQueryDto) {
     const stats = await this.dashboardService.getApiStats(queryDto);
-    return {
-      code: 200,
-      message: '操作成功',
-      data: stats,
-      timestamp: Date.now()
-    };
+    // return {
+    //   code: 200,
+    //   message: '操作成功',
+    //   data: stats,
+    //   timestamp: Date.now()
+    // };
+    return stats;
   }
 }
