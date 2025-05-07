@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { constantRoutes, basicRoutes, errorRoutes } from './routes'
 import { setupRouterGuard } from './permission'
 import { usePermissionStore } from '../store/modules/permission'
+import loggerRoutes from './modules/logger' // 引入日志管理模块路由
 
 // 创建路由实例 - 只加载静态路由和基础路由
 const router = createRouter({
@@ -10,6 +11,10 @@ const router = createRouter({
   routes: [...constantRoutes, ...basicRoutes], // 只加载静态路由和基础路由
   scrollBehavior: () => ({ left: 0, top: 0 })
 })
+
+// 手动添加日志模块路由
+router.addRoute(loggerRoutes)
+console.log('🚩 添加日志管理模块路由')
 
 // 设置路由守卫
 setupRouterGuard(router)

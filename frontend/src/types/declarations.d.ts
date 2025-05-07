@@ -19,3 +19,4 @@ declare module 'vue-router' {
     alwaysShow?: boolean
   }
 }
+
