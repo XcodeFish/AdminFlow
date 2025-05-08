@@ -15,17 +15,17 @@
         <el-form label-position="top" size="small">
           <el-form-item label="查询布局">
             <el-radio-group v-model="queryConfig.layout">
-              <el-radio label="inline">行内布局</el-radio>
-              <el-radio label="horizontal">水平布局</el-radio>
-              <el-radio label="vertical">垂直布局</el-radio>
+              <el-radio label="行内布局" value="inline">行内布局</el-radio>
+              <el-radio label="水平布局" value="horizontal">水平布局</el-radio>
+              <el-radio label="垂直布局" value="vertical">垂直布局</el-radio>
             </el-radio-group>
           </el-form-item>
 
           <el-form-item label="标签位置">
             <el-radio-group v-model="queryConfig.labelPosition">
-              <el-radio label="left">左对齐</el-radio>
-              <el-radio label="right">右对齐</el-radio>
-              <el-radio label="top">顶部对齐</el-radio>
+              <el-radio label="左对齐" value="left">左对齐</el-radio>
+              <el-radio label="右对齐" value="right">右对齐</el-radio>
+              <el-radio label="顶部对齐" value="top">顶部对齐</el-radio>
             </el-radio-group>
           </el-form-item>
 
@@ -41,9 +41,9 @@
 
           <el-form-item label="组件尺寸">
             <el-radio-group v-model="queryConfig.size">
-              <el-radio label="default">默认</el-radio>
-              <el-radio label="small">小</el-radio>
-              <el-radio label="large">大</el-radio>
+              <el-radio label="默认" value="default">默认</el-radio>
+              <el-radio label="小" value="small">小</el-radio>
+              <el-radio label="大" value="large">大</el-radio>
             </el-radio-group>
           </el-form-item>
 

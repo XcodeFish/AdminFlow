@@ -1,5 +1,6 @@
 <template>
-  <el-dialog title="分配权限" v-model="dialogVisible" width="600px" destroy-on-close @closed="handleDialogClosed">
+  <el-dialog title="分配权限" v-model="dialogVisible" width="600px" destroy-on-close @closed="handleDialogClosed"
+    @open="handleDialogOpen">
     <div v-loading="loading">
       <el-alert type="info" :closable="false" class="mb-4">
         <p>请勾选需要授权的权限：</p>
@@ -8,18 +9,22 @@
       </el-alert>
 
       <div class="permission-tree-container">
-        <el-tree ref="permissionTreeRef" :data="permissionTree" show-checkbox node-key="permKey" :props="treeProps"
-          :default-checked-keys="checkedPermKeys" :highlight-current="true" :check-strictly="false"
-          :expand-on-click-node="false" @check="handleTreeCheck">
-          <template #default="{ node, data }">
-            <div class="custom-tree-node">
-              <span>{{ data.permName }}</span>
-              <el-tag size="small" :type="getPermTypeTag(data.permType)">
-                {{ getPermTypeName(data.permType) }}
-              </el-tag>
-            </div>
-          </template>
-        </el-tree>
+        <!-- 条件渲染，仅在数据加载完成后渲染树 -->
+        <template v-if="isDataReady">
+          <el-tree ref="permissionTreeRef" :data="permissionTreeData" show-checkbox node-key="permKey"
+            :props="treeProps" :highlight-current="true" :check-strictly="false" :expand-on-click-node="false"
+            @check="handleTreeCheck">
+            <template #default="{ node, data }">
+              <div class="custom-tree-node">
+                <span>{{ data.permName }}</span>
+                <el-tag size="small" :type="getTagType(data.permType)">
+                  {{ getTypeName(data.permType) }}
+                </el-tag>
+              </div>
+            </template>
+          </el-tree>
+        </template>
+        <el-empty v-else description="正在加载权限数据..."></el-empty>
       </div>
     </div>
 
@@ -33,10 +38,13 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, computed } from 'vue'
-import { ElMessage, ElTree } from 'element-plus'
+import { ref, computed, nextTick, onMounted } from 'vue'
+import { ElMessage, ElTree, ElEmpty } from 'element-plus'
 import type { Permission } from '@/types/permission'
-import useRolePermission from '../hooks/useRolePermission'
+
+// 角色权限API
+import { assignRolePermissions, getRolePermissions } from '@/api/modules/role'
+import { getPermissionTree } from '@/api/modules/permission'
 
 const props = defineProps({
   visible: {
@@ -54,90 +62,172 @@ const emit = defineEmits<{
   (e: 'success'): void
 }>()
 
-// 弹窗显示控制
+// ======== 状态管理 ========
 const dialogVisible = computed({
   get: () => props.visible,
   set: (val) => emit('update:visible', val)
 })
 
-// 角色ID
-const currentRoleId = ref<string | null>(props.roleId || null)
+const loading = ref(false)
+const permissionTreeRef = ref<InstanceType<typeof ElTree> | null>(null)
+const permissionTreeData = ref<Permission[]>([])
+const selectedPermKeys = ref<string[]>([])
+const isDataReady = ref(false) // 新增：控制树渲染的状态标志
 
-// 树形引用
-const permissionTreeRef = ref<InstanceType<typeof ElTree>>()
-
-// 树形配置
+// 树节点配置
 const treeProps = {
   children: 'children',
   label: 'permName'
 }
 
-// 使用权限分配Hook
-const {
-  permissionTree,
-  checkedPermKeys,
-  loading,
-  loadPermissionData,
-  saveRolePermissions,
-  getPermTypeName
-} = useRolePermission(currentRoleId)
-
-console.log('checkedPermKeys', checkedPermKeys.value)
-
-
-
+// ======== 辅助函数 ========
 // 权限类型对应的Tag类型
-const getPermTypeTag = (type: number) => {
+const getTagType = (type: number) => {
   switch (type) {
-    case 0: return ''       // 菜单 - 默认
-    case 1: return 'success' // 操作 - 绿色
-    case 2: return 'warning' // 数据 - 黄色
-    default: return 'info'   // 未知 - 灰色
+    case 0: return 'info' as const      // 菜单
+    case 1: return 'success' as const   // 操作
+    case 2: return 'warning' as const   // 数据
+    default: return 'info' as const     // 默认
   }
 }
 
-// 监听roleId变化
-watch(() => props.roleId, (newVal) => {
-  currentRoleId.value = newVal || null
-  if (newVal && dialogVisible.value) {
-    loadPermissionData()
+// 权限类型名称
+const getTypeName = (type: number) => {
+  switch (type) {
+    case 0: return '菜单'
+    case 1: return '操作'
+    case 2: return '数据'
+    default: return '未知'
   }
-}, { immediate: true })
+}
 
-// 监听visible变化
-watch(() => props.visible, async (newVal) => {
-  if (newVal && currentRoleId.value) {
-    await loadPermissionData()
-    // 确保树组件已加载完成
-    nextTick(() => {
-      if (permissionTreeRef.value) {
-        permissionTreeRef.value.setCheckedKeys(checkedPermKeys.value)
+// ======== 数据加载函数 ========
+// 加载权限数据，分离为两个独立函数
+const loadAllPermissions = async () => {
+  try {
+    const res = await getPermissionTree()
+    if (res.code === 200) {
+      permissionTreeData.value = res.data || []
+    } else {
+      ElMessage.error('获取权限树失败')
+      permissionTreeData.value = []
+    }
+    return true
+  } catch (error) {
+    console.error('加载权限树失败:', error)
+    ElMessage.error('获取权限树失败')
+    permissionTreeData.value = []
+    return false
+  }
+}
+
+// 加载角色已有权限
+const loadRolePermissions = async (roleId: string) => {
+  if (!roleId) return []
+
+  try {
+    const res = await getRolePermissions(roleId)
+    if (res.code === 200 && Array.isArray(res.data)) {
+      return res.data.map(perm => perm.permKey) || []
+    }
+    return []
+  } catch (error) {
+    console.error('加载角色权限失败:', error)
+    return []
+  }
+}
+
+// ======== 初始化加载函数 ========
+// 关键变更：创建一个单独的初始化函数
+const initializePermissions = async () => {
+  if (!props.roleId) return
+
+  loading.value = true
+  isDataReady.value = false
+
+  try {
+    // 1. 加载所有权限树
+    await loadAllPermissions()
+
+    // 2. 加载角色已有权限
+    selectedPermKeys.value = await loadRolePermissions(props.roleId)
+
+    // 3. 标记数据准备完毕
+    isDataReady.value = true
+
+    // 4. 等待下一个渲染周期
+    await nextTick()
+
+    // 5. 再等待一小段时间确保树组件已完全渲染
+    setTimeout(() => {
+      if (permissionTreeRef.value && selectedPermKeys.value.length > 0) {
+        try {
+          // 仅在有选中键和树引用存在时设置选中状态
+          permissionTreeRef.value.setCheckedKeys(selectedPermKeys.value)
+        } catch (err) {
+          console.error('设置选中节点失败:', err)
+        }
       }
-    })
-    console.log('加载后的checkedPermKeys', checkedPermKeys.value)
+    }, 200)
+  } catch (error) {
+    console.error('初始化权限数据失败:', error)
+    ElMessage.error('初始化权限数据失败')
+  } finally {
+    loading.value = false
   }
-})
+}
 
-// 树形选择事件
+// ======== 事件处理函数 ========
+// 处理对话框打开事件
+const handleDialogOpen = () => {
+  // 当对话框打开时初始化数据
+  initializePermissions()
+}
+
+// 树节点选择事件
 const handleTreeCheck = () => {
-  // 使用tree组件获取当前选中的节点
-  if (permissionTreeRef.value) {
-    checkedPermKeys.value = permissionTreeRef.value.getCheckedKeys() as string[]
+  if (!permissionTreeRef.value) return
+
+  try {
+    const keys = permissionTreeRef.value.getCheckedKeys()
+    selectedPermKeys.value = keys as string[]
+  } catch (err) {
+    console.error('获取选中节点失败:', err)
   }
 }
 
-// 保存权限分配
+// 保存权限
 const handleSave = async () => {
-  const success = await saveRolePermissions()
-  if (success) {
-    dialogVisible.value = false
-    emit('success')
+  if (!props.roleId) return
+
+  loading.value = true
+
+  try {
+    const res = await assignRolePermissions(props.roleId, {
+      permKeys: selectedPermKeys.value || []
+    })
+
+    if (res.code === 0) {
+      ElMessage.success('权限分配成功')
+      dialogVisible.value = false
+      emit('success')
+    } else {
+      ElMessage.error(res.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('保存权限分配失败:', error)
+    ElMessage.error('保存权限分配失败')
+  } finally {
+    loading.value = false
   }
 }
 
-// 弹窗关闭时重置
+// 对话框关闭处理
 const handleDialogClosed = () => {
-  checkedPermKeys.value = []
+  // 重置状态
+  isDataReady.value = false
+  selectedPermKeys.value = []
+  permissionTreeData.value = []
 }
 </script>
 

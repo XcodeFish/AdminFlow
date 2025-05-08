@@ -38,14 +38,15 @@
         <!-- 展示选项 -->
         <el-table-column label="列表" width="80" align="center">
           <template #default="{ row }">
-            <el-switch v-model="row.showInList" @change="() => toggleListDisplay(row.name)" :disabled="row.isPrimary" />
+            <el-switch v-model="row.showInList" @change="() => toggleListDisplay(row.name)"
+              :disabled="!!row.isPrimary" />
           </template>
         </el-table-column>
 
         <el-table-column label="表单" width="80" align="center">
           <template #default="{ row }">
             <el-switch v-model="row.showInForm" @change="() => toggleFormDisplay(row.name)"
-              :disabled="row.isAutoIncrement" />
+              :disabled="!!row.isAutoIncrement" />
           </template>
         </el-table-column>
 
@@ -148,7 +149,8 @@
         <el-divider content-position="center">验证规则</el-divider>
 
         <el-form-item label="必填">
-          <el-switch v-model="isRequired" :disabled="editingField.isPrimary || !displayLocations.includes('form')" />
+          <el-switch v-model="isRequired"
+            :disabled="!!(editingField.isPrimary || !displayLocations.includes('form'))" />
         </el-form-item>
 
         <el-form-item v-if="isRequired" label="错误提示">

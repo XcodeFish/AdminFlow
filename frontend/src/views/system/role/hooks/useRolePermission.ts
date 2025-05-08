@@ -21,19 +21,22 @@ export default function useRolePermission(roleId: Ref<string | null>) {
       const treeRes = await getPermissionTree()
 
       if (treeRes.code === 200) {
-        permissionTree.value = treeRes.data
+        permissionTree.value = treeRes.data || []
       }
 
       // 获取角色已有权限
       const rolePermRes = await getRolePermissions(roleId.value)
       console.log('rolePermRes', rolePermRes)
-      if (rolePermRes.code === 200) {
-        checkedPermKeys.value = rolePermRes.data.map((perm) => perm.permKey)
+      if (rolePermRes.code === 200 && rolePermRes.data) {
+        checkedPermKeys.value = rolePermRes.data.map((perm) => perm.permKey) || []
         console.log('映射后的checkedPermKeys:', checkedPermKeys.value)
       }
     } catch (error) {
       console.error('加载权限数据失败', error)
       ElMessage.error('获取权限数据失败')
+      // 确保出错时这些值不为undefined
+      permissionTree.value = []
+      checkedPermKeys.value = []
     } finally {
       loading.value = false
     }
@@ -46,7 +49,7 @@ export default function useRolePermission(roleId: Ref<string | null>) {
     loading.value = true
     try {
       const params: AssignRolePermissionsParams = {
-        permKeys: checkedPermKeys.value
+        permKeys: checkedPermKeys.value || []
       }
 
       const res = await assignRolePermissions(roleId.value, params)

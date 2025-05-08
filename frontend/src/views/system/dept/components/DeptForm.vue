@@ -30,8 +30,8 @@
 
       <el-form-item label="部门状态">
         <el-radio-group v-model="formData.status">
-          <el-radio :label="1">正常</el-radio>
-          <el-radio :label="0">停用</el-radio>
+          <el-radio label="正常" :value="1">正常</el-radio>
+          <el-radio label="停用" :value="0">停用</el-radio>
         </el-radio-group>
       </el-form-item>
     </el-form>

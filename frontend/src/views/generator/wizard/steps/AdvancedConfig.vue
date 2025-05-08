@@ -13,9 +13,9 @@
 
       <el-form-item label="模板类型">
         <el-radio-group v-model="formData.templateType">
-          <el-radio label="default">默认模板</el-radio>
-          <el-radio label="simple">简单模板</el-radio>
-          <el-radio label="detailed">详细模板</el-radio>
+          <el-radio label="默认模板" value="default">默认模板</el-radio>
+          <el-radio label="简单模板" value="simple">简单模板</el-radio>
+          <el-radio label="详细模板" value="detailed">详细模板</el-radio>
         </el-radio-group>
       </el-form-item>
 

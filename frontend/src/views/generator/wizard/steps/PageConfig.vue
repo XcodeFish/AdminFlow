@@ -17,9 +17,9 @@
 
       <el-form-item label="列表样式">
         <el-radio-group v-model="formData.listStyle">
-          <el-radio label="table">表格布局</el-radio>
-          <el-radio label="card">卡片布局</el-radio>
-          <el-radio label="list">列表布局</el-radio>
+          <el-radio label="表格布局" value="table">表格布局</el-radio>
+          <el-radio label="卡片布局" value="card">卡片布局</el-radio>
+          <el-radio label="列表布局" value="list">列表布局</el-radio>
         </el-radio-group>
       </el-form-item>
 
@@ -55,9 +55,9 @@
 
       <el-form-item label="标签位置">
         <el-radio-group v-model="formData.labelPosition">
-          <el-radio label="right">右对齐</el-radio>
-          <el-radio label="left">左对齐</el-radio>
-          <el-radio label="top">顶部对齐</el-radio>
+          <el-radio label="右对齐" value="right">右对齐</el-radio>
+          <el-radio label="左对齐" value="left">左对齐</el-radio>
+          <el-radio label="顶部对齐" value="top">顶部对齐</el-radio>
         </el-radio-group>
       </el-form-item>
 

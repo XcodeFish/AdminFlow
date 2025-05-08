@@ -93,15 +93,15 @@
               </el-form-item>
               <el-form-item label="表格大小">
                 <el-radio-group v-model="tableConfig.size">
-                  <el-radio label="large">大</el-radio>
-                  <el-radio label="default">中</el-radio>
-                  <el-radio label="small">小</el-radio>
+                  <el-radio label="大" value="large">大</el-radio>
+                  <el-radio label="中" value="default">中</el-radio>
+                  <el-radio label="小" value="small">小</el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item label="表格样式">
                 <el-radio-group v-model="tableConfig.border">
-                  <el-radio :label="true">带边框</el-radio>
-                  <el-radio :label="false">无边框</el-radio>
+                  <el-radio label="带边框" :value="true">带边框</el-radio>
+                  <el-radio label="无边框" :value="false">无边框</el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item label="斑马纹">
@@ -175,9 +175,9 @@
             </el-form-item>
             <el-form-item label="对齐方式">
               <el-radio-group v-model="columns[activeColumnIndex].align">
-                <el-radio label="left">左对齐</el-radio>
-                <el-radio label="center">居中</el-radio>
-                <el-radio label="right">右对齐</el-radio>
+                <el-radio label="左对齐" value="left">左对齐</el-radio>
+                <el-radio label="居中" value="center">居中</el-radio>
+                <el-radio label="右对齐" value="right">右对齐</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-form>

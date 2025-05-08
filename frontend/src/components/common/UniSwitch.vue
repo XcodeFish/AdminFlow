@@ -1,10 +1,11 @@
 <template>
   <el-switch :model-value="modelValue" @update:model-value="updateValue" :active-value="activeValue"
-    :inactive-value="inactiveValue" v-bind="$attrs" />
+    :inactive-value="inactiveValue" :disabled="!!disabled" v-bind="$attrs" />
 
 </template>
 
 <script setup lang="ts">
+import { ref, nextTick } from 'vue'
 
 const isInitialRender = ref(true)
 
@@ -20,6 +21,10 @@ const props = defineProps({
   },
   inactiveValue: {
     type: [String, Number, Boolean],
+    default: false
+  },
+  disabled: {
+    type: [Boolean, Number],
     default: false
   }
 })
