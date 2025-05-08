@@ -25,9 +25,7 @@ export class TemplateService {
     }
   }
 
-  async findAll(
-    query: QueryTemplateDto,
-  ): Promise<{
+  async findAll(query: QueryTemplateDto): Promise<{
     items: Template[];
     total: number;
     page: number;
@@ -141,6 +139,9 @@ export class TemplateService {
       if (count === 0) {
         this.logger.log('初始化内置模板');
         await this.initializeDefaultTemplates();
+      } else {
+        // 即使已经有模板了，也修复一下vue-list模板
+        await this.fixVueListTemplate();
       }
     } catch (error) {
       this.logger.error(`初始化模板失败: ${error.message}`, error.stack);
@@ -408,11 +409,7 @@ export class {{className}}Service {
       <!-- 表格列 -->
       {{#each fields}}
       {{#if this.showInList}}
-      <el-table-column label="{{this.comment}}" align="center">
-        <template #default="{ row }">
-          {{ row.{{this.name}} }}
-        </template>
-      </el-table-column>
+      <el-table-column label="{{this.comment}}" align="center" prop="{{this.name}}" />
       {{/if}}
       {{/each}}
 
@@ -654,6 +651,44 @@ export function delete{{className}}(id) {
 
     for (const template of defaultTemplates) {
       await this.templateRepository.save(template);
+    }
+  }
+
+  async fixVueListTemplate(): Promise<void> {
+    try {
+      this.logger.log('修复Vue列表页模板...');
+
+      // 查找Vue列表页模板
+      const template = await this.templateRepository.findOne({
+        where: { templateKey: 'vue-list', isActive: true },
+      });
+
+      if (!template) {
+        this.logger.warn('找不到Vue列表页模板，无法修复');
+        return;
+      }
+
+      // 检查是否包含错误的语法
+      if (template.content.includes('{{ row.{{this.name}} }}')) {
+        this.logger.log('发现错误语法，开始修复...');
+
+        // 修复嵌套语法
+        const fixedContent = template.content.replace(
+          /<el-table-column label="{{this\.comment}}" align="center">\s*<template #default="\{ row \}">\s*{{ row\.{{this\.name}} }}\s*<\/template>\s*<\/el-table-column>/g,
+          '<el-table-column label="{{this.comment}}" align="center" prop="{{this.name}}" />',
+        );
+
+        // 更新模板
+        template.content = fixedContent;
+        await this.templateRepository.save(template);
+
+        this.logger.log('Vue列表页模板修复完成');
+      } else {
+        this.logger.log('Vue列表页模板不包含错误语法，无需修复');
+      }
+    } catch (error) {
+      this.logger.error(`修复Vue列表页模板失败: ${error.message}`, error.stack);
+      throw error;
     }
   }
 }

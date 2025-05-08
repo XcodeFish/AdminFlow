@@ -166,6 +166,15 @@ class HttpClient {
           const { status } = error.response
 
           switch (status) {
+            case 400:
+              // 处理Bad Request错误
+              console.error('🚨 请求参数错误(400):', error.response.data)
+              showMessage({
+                type: 'error',
+                message: error.response.data?.message || '请求参数错误'
+              })
+              break
+
             case 401:
               if (!router.currentRoute.value.path.includes('/login')) {
                 eventBus.emit(RequestEvent.UNAUTHORIZED, error)

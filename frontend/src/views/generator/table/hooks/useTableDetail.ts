@@ -79,10 +79,8 @@ export function useTableDetail() {
         author: '系统默认' // 默认作者
       }
 
-      // 修正API调用方法，使用import而非importTable
-      const formData = new FormData()
-      formData.append('data', JSON.stringify(importParams))
-      const response = await api.config.import(formData)
+      // 直接传递对象参数
+      const response = await api.config.import(importParams)
 
       ElMessage.success(`表 ${tableName} 已成功导入到生成配置`)
       return true

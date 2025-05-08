@@ -17,7 +17,7 @@ const LayoutMap: Record<string, any> = {
 
 // 将接口声明改为类型交集
 export type CustomRouteRecord = RouteRecordRaw & {
-  parentName?: string;
+  parentName?: string
 }
 
 // 已处理过的路由路径集合，用于防止重复处理
@@ -142,9 +142,16 @@ export const transformMenuToRoutes = (
           // 如果是目录类型，总是显示（即使只有一个子菜单）
           alwaysShow: menu.menuType === 'M',
           // 默认路由需要认证
-          requiresAuth: true
+          requiresAuth: true,
+          // 添加hidden属性，当isVisible为0时隐藏菜单，处理undefined情况
+          hidden: menu.isVisible !== undefined ? menu.isVisible === 0 : false
         }
       } as CustomRouteRecord
+
+      // 添加日志，显示菜单可见性设置
+      console.log(
+        `🚩 菜单 ${menu.menuName} 的可见性: isVisible=${menu.isVisible ?? '未设置'}, 生成路由的hidden=${route.meta.hidden}`
+      )
 
       // 在这里添加组件存在性检查代码
       if (menu.component && menu.menuType === 'C') {

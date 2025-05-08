@@ -8,7 +8,8 @@ import type {
   VersionCreateDto,
   CompareVersionsDto,
   DeployRequestDto,
-  SaveChangesDto
+  SaveChangesDto,
+  ImportTableParams
 } from '@/types/generator'
 
 /**
@@ -39,46 +40,43 @@ export default {
 
   // 配置相关
   config: {
-    getList: () => request.get('/v1/generator/config'),
-    getById: (id: number) => request.get(`/v1/generator/config/${id}`),
-    create: (data: ConfigCreateDto) => request.post('/v1/generator/config', data),
-    update: (id: number, data: ConfigUpdateDto) => request.put(`/v1/generator/config/${id}`, data),
-    delete: (id: number) => request.del(`/v1/generator/config/${id}`),
-    duplicate: (id: number) => request.post(`/v1/generator/config/${id}/duplicate`),
+    getList: () => request.get('/v1/generator/configs'),
+    getById: (id: number) => request.get(`/v1/generator/configs/${id}`),
+    create: (data: ConfigCreateDto) => request.post('/v1/generator/configs', data),
+    update: (id: number, data: ConfigUpdateDto) => request.put(`/v1/generator/configs/${id}`, data),
+    delete: (id: number) => request.del(`/v1/generator/configs/${id}`),
+    duplicate: (id: number) => request.post(`/v1/generator/configs/${id}/duplicate`),
     export: (id: number) =>
-      request.get(`/v1/generator/config/${id}/export`, { responseType: 'blob' }),
-    import: (formData: FormData) =>
-      request.post('/v1/generator/config/import-table', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
+      request.get(`/v1/generator/configs/${id}/export`, { responseType: 'blob' }),
+    import: (data: ImportTableParams) => request.post('/v1/generator/configs/import-table', data)
   },
 
   // 代码生成与预览
   code: {
-    generate: (configId: number) => request.post(`/v1/generator/code/generate/${configId}`),
-    preview: (configId: number) => request.get(`/v1/generator/code/preview/${configId}`),
-    saveChanges: (data: SaveChangesDto) => request.post('/v1/generator/code/save', data),
+    generate: (configId: number) => request.post(`/v1/generator/generate/deploy/${configId}`),
+    preview: (configId: number) => request.get(`/v1/generator/generate/preview/${configId}`),
+    saveChanges: (data: SaveChangesDto) => request.post('/v1/generator/generate/save', data),
     download: (configId: number) =>
-      request.get(`/v1/generator/code/download/${configId}`, { responseType: 'blob' })
+      request.get(`/v1/generator/generate/download/${configId}`, { responseType: 'blob' })
   },
 
   // 版本管理
   version: {
-    getList: (configId: number) => request.get('/v1/generator/version', { params: { configId } }),
-    getById: (id: number) => request.get(`/v1/generator/version/${id}`),
-    create: (data: VersionCreateDto) => request.post('/v1/generator/version', data),
+    getList: (configId: number) => request.get('/v1/generator/versions', { params: { configId } }),
+    getById: (id: number) => request.get(`/v1/generator/versions/${id}`),
+    create: (data: VersionCreateDto) => request.post('/v1/generator/versions', data),
     compare: (params: CompareVersionsDto) =>
-      request.get('/v1/generator/version/compare', { params }),
-    rollback: (versionId: number) => request.post(`/v1/generator/version/${versionId}/rollback`),
-    delete: (id: number) => request.del(`/v1/generator/version/${id}`)
+      request.get('/v1/generator/versions/compare', { params }),
+    rollback: (versionId: number) => request.post(`/v1/generator/versions/${versionId}/rollback`),
+    delete: (id: number) => request.del(`/v1/generator/versions/${id}`)
   },
 
   // 部署管理
   deploy: {
-    deploy: (data: DeployRequestDto) => request.post('/v1/generator/deploy', data),
-    status: (deploymentId: number) => request.get(`/v1/generator/deploy/${deploymentId}/status`),
-    logs: (deploymentId: number) => request.get(`/v1/generator/deploy/${deploymentId}/logs`),
-    cancel: (deploymentId: number) => request.post(`/v1/generator/deploy/${deploymentId}/cancel`),
-    retry: (deploymentId: number) => request.post(`/v1/generator/deploy/${deploymentId}/retry`)
+    deploy: (data: DeployRequestDto) => request.post('/v1/generator/generate/deploy', data),
+    status: (deploymentId: number) => request.get(`/v1/generator/generate/deploy/${deploymentId}/status`),
+    logs: (deploymentId: number) => request.get(`/v1/generator/generate/deploy/${deploymentId}/logs`),
+    cancel: (deploymentId: number) => request.post(`/v1/generator/generate/deploy/${deploymentId}/cancel`),
+    retry: (deploymentId: number) => request.post(`/v1/generator/generate/deploy/${deploymentId}/retry`)
   }
 }

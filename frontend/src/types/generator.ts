@@ -243,6 +243,21 @@ export interface GeneratorVersion {
   creator: string
   createdAt: Date
   description: string
+  snapshot?: {
+    moduleName: string
+    tableName: string
+    apiPrefix: string
+    packageName?: string
+    description: string
+    fields: Array<{
+      name: string
+      type: string
+      component: string
+      showInList: boolean
+      showInForm: boolean
+      showInSearch: boolean
+    }>
+  }
 }
 
 // 生成代码文件信息

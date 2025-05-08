@@ -148,8 +148,22 @@ export const usePermissionStore = defineStore('permission', {
         this.handleErrorRoutes()
 
         return dynamicRoutes
-      } catch (error) {
+      } catch (error: any) {
         console.error('🚨 获取菜单树数据失败:', error)
+        // 增强错误日志
+        if (error.response) {
+          console.error('🚨 HTTP错误状态码:', error.response.status)
+          console.error('🚨 HTTP错误信息:', error.response.data)
+          console.error('🚨 HTTP错误头:', error.response.headers)
+        } else if (error.request) {
+          console.error('🚨 请求已发送但未收到响应:', error.request)
+        } else {
+          console.error('🚨 请求设置阶段出错:', error.message)
+        }
+        if (error.config) {
+          console.error('🚨 错误配置:', error.config)
+        }
+
         return this.generateRoutesFromUserMenus()
       } finally {
         this.isLoadingRoutes = false
@@ -204,8 +218,22 @@ export const usePermissionStore = defineStore('permission', {
         this.handleErrorRoutes()
 
         return dynamicRoutes
-      } catch (error) {
+      } catch (error: any) {
         console.error('🚨 获取用户菜单数据失败:', error)
+        // 增强错误日志
+        if (error.response) {
+          console.error('🚨 HTTP错误状态码:', error.response.status)
+          console.error('🚨 HTTP错误信息:', error.response.data)
+          console.error('🚨 HTTP错误头:', error.response.headers)
+        } else if (error.request) {
+          console.error('🚨 请求已发送但未收到响应:', error.request)
+        } else {
+          console.error('🚨 请求设置阶段出错:', error.message)
+        }
+        if (error.config) {
+          console.error('🚨 错误配置:', error.config)
+        }
+
         this.fallbackToLocalRoutes = true
         return []
       }

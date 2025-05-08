@@ -34,6 +34,7 @@ export interface MenuTreeNode {
   component: string | null
   menuType: 'M' | 'C' | 'F'
   icon: string | null
+  isVisible?: number
   children?: MenuTreeNode[]
 }
 
@@ -120,7 +121,7 @@ export interface MenuListResponse {
 export interface MenuTreeResponse {
   code?: number
   message?: string
-  data:MenuTreeNode[],
+  data: MenuTreeNode[]
   timestamp?: string
 }
 
