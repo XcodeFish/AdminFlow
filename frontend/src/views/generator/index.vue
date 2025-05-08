@@ -33,12 +33,12 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  DataBase,
-  Table,
-  Magic,
-  Files,
+  DataAnalysis, // 而非 DataBase
+  List, // 而非 Table
+  MagicStick, // 而非 Magic
+  Document, // 或者 Folder 替代 Files
   View,
-  Management
+  Setting // 或 Operation 替代 Management
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -49,25 +49,25 @@ const modules = ref([
     title: '数据源管理',
     description: '配置和管理数据库连接',
     path: '/generator/datasource',
-    icon: 'DataBase'
+    icon: 'DataAnalysis'
   },
   {
     title: '表结构管理',
     description: '管理和配置数据库表结构',
     path: '/generator/table',
-    icon: 'Table'
+    icon: 'List'
   },
   {
     title: '代码向导',
     description: '使用向导生成应用代码',
     path: '/generator/wizard',
-    icon: 'Magic'
+    icon: 'MagicStick'
   },
   {
     title: '配置管理',
     description: '管理生成器配置和模板',
     path: '/generator/config',
-    icon: 'Management'
+    icon: 'Setting'
   },
   {
     title: '代码预览',
@@ -79,7 +79,7 @@ const modules = ref([
     title: '版本管理',
     description: '管理生成代码的版本',
     path: '/generator/version',
-    icon: 'Files'
+    icon: 'Document'
   }
 ])
 

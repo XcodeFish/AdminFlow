@@ -55,23 +55,23 @@ export function useTableList() {
    * 刷新表结构
    * @param tableId 表ID
    */
-  const refreshTable = async (tableId: number) => {
-    loading.value = true
-    try {
-      await api.table.refresh(tableId)
-      ElMessage.success('刷新表结构成功')
-      if (currentDatasourceId.value) {
-        await fetchTables(currentDatasourceId.value)
-      }
-      return true
-    } catch (error) {
-      console.error('刷新表结构失败:', error)
-      ElMessage.error('刷新表结构失败')
-      return false
-    } finally {
-      loading.value = false
-    }
-  }
+  // const refreshTable = async (tableId: number) => {
+  //   loading.value = true
+  //   try {
+  //     await api.table.refresh(tableId)
+  //     ElMessage.success('刷新表结构成功')
+  //     if (currentDatasourceId.value) {
+  //       await fetchTables(currentDatasourceId.value)
+  //     }
+  //     return true
+  //   } catch (error) {
+  //     console.error('刷新表结构失败:', error)
+  //     ElMessage.error('刷新表结构失败')
+  //     return false
+  //   } finally {
+  //     loading.value = false
+  //   }
+  // }
 
   /**
    * 选择表
@@ -105,7 +105,7 @@ export function useTableList() {
     isEmpty,
     hasSelectedTable,
     fetchTables,
-    refreshTable,
+    // refreshTable,
     selectTable,
     clearSelection
   }

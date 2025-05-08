@@ -100,7 +100,6 @@ const {
   currentTable,
   isEmpty,
   fetchTables,
-  refreshTable,
   selectTable,
   clearSelection
 } = useTableList()
@@ -110,7 +109,6 @@ const {
   tableDetail,
   loading: detailLoading,
   detailDrawerVisible,
-  fetchTableDetail,
   openDetailDrawer,
   closeDetailDrawer,
   importTableToConfig

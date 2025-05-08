@@ -35,7 +35,7 @@
         </template>
       </el-input>
       <div class="preview-area">
-        <el-button v-if="customIconName" type="text" @click="previewCustomIcon">预览图标</el-button>
+        <el-button v-if="customIconName" type="primary" link @click="previewCustomIcon">预览图标</el-button>
         <div v-if="customIconName && customIconPreview" class="custom-preview">
           <Icon v-if="isValidIconName" :icon="customIconName" />
           <span v-if="isValidIconName">图标预览</span>
@@ -85,7 +85,7 @@
 
     <!-- 图标集浏览提示 -->
     <div class="browse-tip">
-      <el-button type="text" @click="openIconBrowser">
+      <el-button type="primary" link @click="openIconBrowser">
         <el-icon>
           <Link />
         </el-icon>
