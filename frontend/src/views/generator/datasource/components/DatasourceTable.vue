@@ -25,7 +25,7 @@
         :formatter="(row) => formatDateTime(row.createdAt)" />
       <el-table-column label="操作" fixed="right" width="200" align="center">
         <template #default="{ row }">
-          <el-button size="small" type="primary" text @click="handleTest(row)" :loading="testingId === row.id">
+          <el-button size="small" type="primary" text @click="handleTest(row)" :loading="props.testingId === row.id">
             测试连接
           </el-button>
           <el-button size="small" type="primary" text @click="handleEdit(row)">
@@ -71,6 +71,10 @@ const props = defineProps({
   pageSize: {
     type: Number,
     default: 10
+  },
+  testingId: {
+    type: Number,
+    default: null
   }
 })
 
@@ -82,8 +86,6 @@ const emit = defineEmits([
   'current-change'
 ])
 
-// 测试中的数据源ID
-const testingId = ref<number | null>(null)
 // 删除中的数据源ID
 const deletingId = ref<number | null>(null)
 
@@ -156,12 +158,8 @@ const handleDelete = async (row: Datasource) => {
  * 处理测试连接操作
  */
 const handleTest = (row: Datasource) => {
-  testingId.value = row.id
   emit('test', row)
-  // 测试结束后清除状态
-  setTimeout(() => {
-    testingId.value = null
-  }, 2000)
+  // 由父组件控制测试结束状态
 }
 
 /**

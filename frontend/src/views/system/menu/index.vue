@@ -31,6 +31,20 @@
       </template>
     </UniTable>
 
+    <!-- 分页组件 -->
+    <div class="pagination-container" v-if="total > 0">
+      <el-pagination
+        background
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        :page-size="searchParams.limit"
+        :current-page="searchParams.page"
+        :page-sizes="[10, 20, 50, 100]"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
+
     <!-- 菜单表单对话框 -->
     <MenuForm v-model:visible="dialogVisible" :menu="currentMenu" :parent-id="parentId" @success="handleFormSuccess"
       @cancel="dialogVisible = false" />
@@ -63,6 +77,9 @@ const {
   searchParams,
   columns,
   fetchMenuList,
+  handleCurrentChange,
+  handleSizeChange,
+  total
 } = useMenuTable()
 
 // 菜单操作相关逻辑
@@ -102,10 +119,11 @@ const onSearch = (params: string) => {
 const onReset = () => {
   // 重置搜索条件
   Object.keys(searchParams).forEach(key => {
-    if (key !== 'page' && key !== 'pageSize') {
+    if (key !== 'page' && key !== 'limit') {
       (searchParams as Record<string, any>)[key] = undefined
     }
   })
+  searchParams.page = 1
   fetchMenuList()
 }
 
@@ -154,6 +172,12 @@ const handleFormSuccess = () => {
   align-items: center;
   margin-bottom: 16px;
   gap: 16px;
+}
+
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .el-menu-item.is-active,

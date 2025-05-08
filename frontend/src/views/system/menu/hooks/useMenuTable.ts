@@ -9,11 +9,15 @@ export default function useMenuTable() {
   const loading = ref(false)
   const isInitialLoading = ref(true)
   const tableRef = ref()
+  // 总记录数
+  const total = ref(0)
 
   // 查询参数
   const searchParams = reactive<QueryMenuParams>({
     menuName: '',
-    status: undefined
+    status: undefined,
+    page: 1,
+    limit: 10
   })
 
   // 表格列配置
@@ -45,7 +49,7 @@ export default function useMenuTable() {
       prop: 'createdAt',
       label: '创建时间',
       minWidth: 180,
-          formatter: (row: MenuItem) => {
+      formatter: (row: MenuItem) => {
         if (!row.createdAt) return '-'
         return formatDate(row.createdAt, 'yyyy-MM-dd HH:mm')
       }
@@ -61,9 +65,11 @@ export default function useMenuTable() {
 
       if (!data) {
         menuList.value = []
+        total.value = 0
         return
       }
       menuList.value = data.items && data.items.length ? data.items : []
+      total.value = data.total || 0
 
       // 列表加载完成后
       nextTick(() => {
@@ -108,6 +114,7 @@ export default function useMenuTable() {
     tableRowClassName,
     fetchMenuList,
     handleCurrentChange,
-    handleSizeChange
+    handleSizeChange,
+    total
   }
 }

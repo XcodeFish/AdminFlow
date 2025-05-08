@@ -29,14 +29,8 @@ export function useTableDetail() {
     loading.value = true
 
     try {
-      // 获取表信息
-      // 注意: 根据API定义，这里使用正确的参数调用
-      const tableId = await getTableId(datasourceId, tableName)
-      if (!tableId) {
-        throw new Error('未找到表信息')
-      }
-
-      const response = await api.table.getColumns(tableId)
+      // 直接使用更新后的API调用，传入datasourceId和tableName
+      const response = await api.table.getColumns(datasourceId, tableName)
       tableDetail.value = response.data
       return response.data
     } catch (error) {
@@ -46,25 +40,6 @@ export function useTableDetail() {
       return null
     } finally {
       loading.value = false
-    }
-  }
-
-  /**
-   * 根据数据源ID和表名获取表ID
-   * 这是一个辅助方法，实际可能需要根据API设计调整
-   */
-  const getTableId = async (datasourceId: number, tableName: string): Promise<number | null> => {
-    try {
-      // 这里模拟获取表ID的方法
-      // 在实际应用中，可能需要先获取表列表，然后根据表名匹配到对应的表ID
-      // 或者后端直接提供一个根据数据源ID和表名获取表详情的接口
-
-      // 假设API实际需要传递一个tableId，这里先模拟一个
-      // 实际项目中需要根据API设计调整这部分逻辑
-      return datasourceId // 暂时用datasourceId代替tableId用于演示
-    } catch (error) {
-      console.error('获取表ID失败:', error)
-      return null
     }
   }
 

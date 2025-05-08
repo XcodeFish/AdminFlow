@@ -22,16 +22,19 @@ export default {
     update: (id: number, data: DatasourceUpdateDto) =>
       request.put(`/v1/generator/datasource/${id}`, data),
     delete: (id: number) => request.del(`/v1/generator/datasource/${id}`),
-    test: (data: DatasourceTestDto) => request.post('/v1/generator/datasource/test', data)
+    test: (data: DatasourceTestDto) =>
+      request.post('/v1/generator/datasource/test-connection', data)
   },
 
   // 表结构相关
   table: {
     getList: (datasourceId: number) =>
-      request.get('/v1/generator/table', { params: { datasourceId } }),
-    getColumns: (tableId: number) => request.get(`/v1/generator/table/${tableId}/columns`),
-    getRelations: (tableId: number) => request.get(`/v1/generator/table/${tableId}/relations`),
-    refresh: (tableId: number) => request.post(`/v1/generator/table/${tableId}/refresh`)
+      request.get('/v1/generator/datasource/' + datasourceId + '/tables'),
+    getColumns: (datasourceId: number, tableName: string) =>
+      request.get(`/v1/generator/datasource/${datasourceId}/tables/${tableName}`)
+    // 以下API在后端可能没有对应实现，暂时注释或保留
+    // getRelations: (tableId: number) => request.get(`/v1/generator/table/${tableId}/relations`),
+    // refresh: (tableId: number) => request.post(`/v1/generator/table/${tableId}/refresh`)
   },
 
   // 配置相关
@@ -42,7 +45,8 @@ export default {
     update: (id: number, data: ConfigUpdateDto) => request.put(`/v1/generator/config/${id}`, data),
     delete: (id: number) => request.del(`/v1/generator/config/${id}`),
     duplicate: (id: number) => request.post(`/v1/generator/config/${id}/duplicate`),
-    export: (id: number) => request.get(`/v1/generator/config/${id}/export`, { responseType: 'blob' }),
+    export: (id: number) =>
+      request.get(`/v1/generator/config/${id}/export`, { responseType: 'blob' }),
     import: (formData: FormData) =>
       request.post('/v1/generator/config/import', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -63,7 +67,8 @@ export default {
     getList: (configId: number) => request.get('/v1/generator/version', { params: { configId } }),
     getById: (id: number) => request.get(`/v1/generator/version/${id}`),
     create: (data: VersionCreateDto) => request.post('/v1/generator/version', data),
-    compare: (params: CompareVersionsDto) => request.get('/v1/generator/version/compare', { params }),
+    compare: (params: CompareVersionsDto) =>
+      request.get('/v1/generator/version/compare', { params }),
     rollback: (versionId: number) => request.post(`/v1/generator/version/${versionId}/rollback`),
     delete: (id: number) => request.del(`/v1/generator/version/${id}`)
   },

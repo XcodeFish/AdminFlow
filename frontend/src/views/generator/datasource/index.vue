@@ -33,7 +33,7 @@
 
       <!-- 数据源表格 -->
       <DatasourceTable :datasources="datasources" :loading="loading" :total="total" :current-page="currentPage"
-        :page-size="pageSize" @edit="handleEdit" @delete="handleDelete" @test="handleTest"
+        :page-size="pageSize" :testing-id="testingId" @edit="handleEdit" @delete="handleDelete" @test="handleTest"
         @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </el-card>
 
@@ -51,11 +51,14 @@ import DatasourceForm from './components/DatasourceForm.vue'
 import { useDatasource } from './hooks/useDatasource'
 import { useConnection } from './hooks/useConnection'
 import type { Datasource } from '@/types/generator'
+import { ElMessageBox, ElMessage } from 'element-plus'
 
 // 搜索关键词
 const searchKeyword = ref('')
 // 表单加载状态
 const formLoading = ref(false)
+// 当前测试中的数据源ID
+const testingId = ref<number | null>(null)
 
 // 使用数据源hook
 const {
@@ -110,15 +113,39 @@ const handleDelete = async (id: number) => {
  * 处理测试连接
  */
 const handleTest = async (datasource: Datasource) => {
-  await testConnection({
-    type: datasource.type,
-    host: datasource.host,
-    port: datasource.port,
-    database: datasource.database,
-    username: datasource.username,
-    password: '', // 密码不会返回，需要重新输入测试
-    options: datasource.options
-  })
+  try {
+    testingId.value = datasource.id
+    // 弹出密码输入框
+    const { value: password } = await ElMessageBox.prompt('请输入数据库密码', '测试连接', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      inputType: 'password',
+      inputValidator: (value) => {
+        if (!value) {
+          return '密码不能为空'
+        }
+        return true
+      }
+    })
+
+    // 使用用户输入的密码进行连接测试
+    await testConnection({
+      type: datasource.type,
+      host: datasource.host,
+      port: datasource.port,
+      database: datasource.database,
+      username: datasource.username,
+      password: password, // 使用用户输入的密码
+      options: datasource.options
+    })
+  } catch (error: any) {
+    // 用户取消输入或其他错误
+    if (error !== 'cancel') {
+      ElMessage.error('测试连接失败: ' + (error.message || '未知错误'))
+    }
+  } finally {
+    testingId.value = null
+  }
 }
 
 /**
