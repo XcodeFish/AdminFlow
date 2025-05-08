@@ -48,7 +48,7 @@ export default {
     export: (id: number) =>
       request.get(`/v1/generator/config/${id}/export`, { responseType: 'blob' }),
     import: (formData: FormData) =>
-      request.post('/v1/generator/config/import', formData, {
+      request.post('/v1/generator/config/import-table', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
   },
