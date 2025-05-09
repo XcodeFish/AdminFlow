@@ -5,12 +5,13 @@ import {
   IsArray,
   IsObject,
   ValidateNested,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class FieldValidateDto {
   @IsOptional()
-  @IsString()
+  @IsBoolean()
   required?: boolean;
 
   @IsOptional()
@@ -33,6 +34,10 @@ export class FieldValidateDto {
 export class FieldConfigDto {
   @IsString()
   name: string;
+
+  @IsOptional()
+  @IsString()
+  type?: string;
 
   @IsOptional()
   @IsString()
@@ -69,12 +74,15 @@ export class FieldConfigDto {
   validate?: FieldValidateDto[];
 
   @IsOptional()
+  @IsBoolean()
   showInList?: boolean;
 
   @IsOptional()
+  @IsBoolean()
   showInForm?: boolean;
 
   @IsOptional()
+  @IsBoolean()
   showInSearch?: boolean;
 }
 
@@ -84,9 +92,11 @@ export class PageListConfigDto {
   title?: string;
 
   @IsOptional()
+  @IsBoolean()
   showCheckbox?: boolean;
 
   @IsOptional()
+  @IsBoolean()
   showPagination?: boolean;
 
   @IsOptional()
@@ -94,6 +104,7 @@ export class PageListConfigDto {
   pageSize?: number;
 
   @IsOptional()
+  @IsBoolean()
   showOperation?: boolean;
 
   @IsOptional()

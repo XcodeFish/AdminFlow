@@ -7,7 +7,10 @@ import type {
   ValidationError,
   TableDetail,
   GeneratorField,
-  PageConfig
+  PageConfig,
+  ConfigCreateDto,
+  ColumnInfo,
+  GeneratedCodeFile
 } from '@/types/generator'
 import generatorApi from '@/api/modules/generator'
 import { ElMessage } from 'element-plus'
@@ -139,10 +142,7 @@ export const useWizardStore = defineStore('wizard', () => {
   }
 
   // 方法：初始化向导
-  const initWizard = (
-    initialData?: Partial<WizardData>,
-    initDatasourceId?: number
-  ) => {
+  const initWizard = (initialData?: Partial<WizardData>, initDatasourceId?: number) => {
     resetWizard()
     if (initialData) {
       Object.assign(wizardData, initialData)
@@ -251,15 +251,19 @@ export const useWizardStore = defineStore('wizard', () => {
   const transformTableToFields = () => {
     if (!tableDetail.value) return
 
-    generatorFields.value = tableDetail.value.columns.map(column => {
-      // 根据列类型设置合适的表单控件
+    generatorFields.value = tableDetail.value.columns.map((column: ColumnInfo) => {
+      // 根据字段类型选择合适的表单组件
       let component = 'Input'
-      if (column.type.includes('int')) {
-        component = 'InputNumber'
+      if (column.type.includes('text')) {
+        component = 'Textarea'
       } else if (column.type.includes('date') || column.type.includes('time')) {
         component = 'DatePicker'
-      } else if (column.type.includes('text')) {
-        component = 'Textarea'
+      } else if (
+        column.name.includes('status') ||
+        column.name.includes('type') ||
+        column.name.includes('sex')
+      ) {
+        component = 'Select'
       }
 
       return {
@@ -277,27 +281,34 @@ export const useWizardStore = defineStore('wizard', () => {
         showInSearch: column.isPrimary || column.name === 'name' || column.name.endsWith('_name'),
         component,
         queryType: 'EQ',
-        validate: column.nullable ? [] : [{ required: true, message: `${column.comment || column.name}不能为空` }]
+        validate: column.nullable
+          ? []
+          : [{ required: true, message: `${column.comment || column.name}不能为空` }]
       } as GeneratorField
     })
 
     // 更新页面配置中的字段列表
     wizardData.pageConfig.listColumns = generatorFields.value
-      .filter(f => f.showInList)
-      .map(f => f.name)
+      .filter((field: GeneratorField) => field.showInList)
+      .map((field: GeneratorField) => field.name)
 
     wizardData.pageConfig.searchColumns = generatorFields.value
-      .filter(f => f.showInSearch)
-      .map(f => f.name)
+      .filter((field: GeneratorField) => field.showInSearch)
+      .map((field: GeneratorField) => field.name)
 
     wizardData.pageConfig.formColumns = generatorFields.value
-      .filter(f => f.showInForm)
-      .map(f => f.name)
+      .filter((field: GeneratorField) => field.showInForm)
+      .map((field: GeneratorField) => field.name)
   }
 
   // 方法：将数据库类型映射为TypeScript类型
   const mapDbTypeToTsType = (dbType: string): string => {
-    if (dbType.includes('int') || dbType.includes('float') || dbType.includes('double') || dbType.includes('decimal')) {
+    if (
+      dbType.includes('int') ||
+      dbType.includes('float') ||
+      dbType.includes('double') ||
+      dbType.includes('decimal')
+    ) {
       return 'number'
     } else if (dbType.includes('date') || dbType.includes('time')) {
       return 'Date'
@@ -318,85 +329,221 @@ export const useWizardStore = defineStore('wizard', () => {
 
     isLoading.value = true
     try {
+      // 检查是否有必要的信息来生成代码
+      if (!wizardData.basicInfo.moduleName) {
+        ElMessage.error('请先设置模块名称')
+        return null
+      }
+
+      // 尝试从向导数据中获取表名，如果没有tableDetail
+      const tableName =
+        tableDetail.value?.tableName || wizardData.basicInfo.moduleName.toLowerCase() + '_table'
+      const dsId = datasourceId.value || 1 // 如果没有数据源ID，使用默认值1
+
+      // 构建正确的页面配置格式
+      const formattedPageConfig = {
+        list: {
+          title: wizardData.pageConfig.listTitle || wizardData.basicInfo.moduleName + '管理',
+          showCheckbox: wizardData.pageConfig.showCheckbox ?? true,
+          showPagination: wizardData.pageConfig.showPagination ?? true,
+          pageSize: wizardData.pageConfig.pageSize ?? 10,
+          showOperation: wizardData.pageConfig.showOperation ?? true,
+          operations: wizardData.pageConfig.selectedOperations || ['view', 'edit', 'delete']
+        },
+        form: {
+          width: wizardData.pageConfig.formWidth || '600px',
+          labelWidth: wizardData.pageConfig.labelWidth || '120px',
+          labelPosition: wizardData.pageConfig.labelPosition || 'right',
+          size: 'default'
+        },
+        permissions: {
+          list: '',
+          create: '',
+          update: '',
+          delete: '',
+          export: '',
+          import: ''
+        }
+      }
+
+      // 使用字段配置，如果没有则创建默认字段
+      let fields = generatorFields.value
+      if (fields.length === 0 && wizardData.pageConfig.listColumns.length > 0) {
+        // 根据列表字段创建一些默认字段配置
+        fields = wizardData.pageConfig.listColumns.map(
+          (name) =>
+            ({
+              name,
+              type: 'varchar',
+              tsType: 'string',
+              comment: name,
+              showInList: true,
+              showInForm: true,
+              showInSearch: false,
+              component: 'Input',
+              queryType: 'EQ'
+            }) as GeneratorField
+        )
+      } else if (fields.length === 0) {
+        // 创建一些默认字段
+        fields = [
+          {
+            name: 'id',
+            type: 'int',
+            tsType: 'number',
+            comment: 'ID',
+            showInList: true,
+            showInForm: false,
+            showInSearch: false,
+            component: 'Input',
+            queryType: 'EQ',
+            isPrimary: true
+          },
+          {
+            name: 'name',
+            type: 'varchar',
+            tsType: 'string',
+            comment: '名称',
+            showInList: true,
+            showInForm: true,
+            showInSearch: true,
+            component: 'Input',
+            queryType: 'LIKE',
+            validate: [{ required: true, message: '名称不能为空' }]
+          }
+        ] as GeneratorField[]
+      }
+
       // 构建配置创建DTO
       const configDto = {
         moduleName: wizardData.basicInfo.moduleName,
-        description: wizardData.basicInfo.moduleDescription,
-        datasourceId: datasourceId.value,
-        tableName: tableDetail.value?.tableName,
+        tableName: tableName,
+        description: wizardData.basicInfo.moduleDescription || '',
+        datasourceId: dsId,
         apiPrefix: `/api/${wizardData.basicInfo.moduleName.toLowerCase()}`,
-        packageName: wizardData.basicInfo.packageName,
+        packageName:
+          wizardData.basicInfo.packageName ||
+          `com.adminflow.${wizardData.basicInfo.moduleName.toLowerCase().replace(/_/g, '.')}`,
         templateType: 'default',
-        fields: generatorFields.value,
-        pageConfig: {
-          ...defaultPageConfig,
-          list: {
-            ...defaultPageConfig.list,
-            title: wizardData.basicInfo.moduleName + '管理'
-          }
-        },
-        author: wizardData.basicInfo.author
+        fields:
+          fields.length > 0
+            ? fields.map((field) => ({
+                name: field.name,
+                type: field.type || 'varchar',
+                tsType: field.tsType || 'string',
+                component: field.component || 'Input',
+                showInList: field.showInList === undefined ? true : field.showInList,
+                showInForm: field.showInForm === undefined ? true : field.showInForm,
+                showInSearch: field.showInSearch === undefined ? false : field.showInSearch,
+                queryType: field.queryType || 'EQ',
+                validate: field.validate || []
+              }))
+            : [
+                {
+                  name: 'id',
+                  type: 'int',
+                  tsType: 'number',
+                  comment: 'ID',
+                  showInList: true,
+                  showInForm: false,
+                  showInSearch: false,
+                  component: 'Input',
+                  queryType: 'EQ',
+                  isPrimary: true
+                }
+              ],
+        pageConfig: formattedPageConfig,
+        author: wizardData.basicInfo.author || 'admin'
       }
+
+      console.log('创建配置DTO:', JSON.stringify(configDto, null, 2))
 
       // 创建配置
-      const config = await generatorApi.config.create(configDto)
+      try {
+        // 添加请求日志
+        console.log('请求URL:', import.meta.env.VITE_BASE_URL)
+        console.log('请求路径:', '/generator/configs')
+        console.log('请求头:', {
+          'Content-Type': 'application/json',
+          Authorization: localStorage.getItem('token')
+            ? `Bearer ${localStorage.getItem('token')}`
+            : '未设置'
+        })
+        console.log('请求体:', JSON.stringify(configDto, null, 2))
 
-      // 生成预览
-      const preview = await generatorApi.code.preview(config.data.id)
+        const config = await generatorApi.config.create(configDto)
+        console.log('创建配置成功:', config)
 
-      const result: GenerationResult = {
-        id: config.data.id.toString(),
-        files: [],
-        stats: {
-          totalFiles: 0,
-          totalCodeLines: 0,
-          frontendFiles: 0,
-          backendFiles: 0
+        // 生成预览
+        const preview = await generatorApi.code.preview(config.data.id)
+        console.log('生成预览成功:', preview)
+
+        const result: GenerationResult = {
+          id: config.data.id.toString(),
+          files: [],
+          stats: {
+            totalFiles: 0,
+            totalCodeLines: 0,
+            frontendFiles: 0,
+            backendFiles: 0
+          }
         }
-      }
 
-      // 转换预览数据为文件列表
-      if (preview.data) {
-        // 处理前端代码
-        const frontendFiles = preview.data.frontend?.map(f => ({
-          path: `frontend/${f.fileName}`,
-          content: f.content,
-          language: getLanguageFromPath(f.fileName),
-          size: f.content.length,
-          isChanged: false
-        })) || []
+        // 转换预览数据为文件列表
+        if (preview.data) {
+          // 处理前端代码
+          const frontendFiles =
+            preview.data.frontend?.map((f: GeneratedCodeFile) => ({
+              path: `frontend/${f.fileName}`,
+              content: f.content,
+              language: getLanguageFromPath(f.fileName),
+              size: f.content.length,
+              isChanged: false
+            })) || []
 
-        // 处理后端代码
-        const backendFiles = preview.data.backend?.map(f => ({
-          path: `backend/${f.fileName}`,
-          content: f.content,
-          language: getLanguageFromPath(f.fileName),
-          size: f.content.length,
-          isChanged: false
-        })) || []
+          // 处理后端代码
+          const backendFiles =
+            preview.data.backend?.map((f: GeneratedCodeFile) => ({
+              path: `backend/${f.fileName}`,
+              content: f.content,
+              language: getLanguageFromPath(f.fileName),
+              size: f.content.length,
+              isChanged: false
+            })) || []
 
-        // 处理SQL代码
-        const sqlFiles = preview.data.sql?.map(f => ({
-          path: `sql/${f.fileName}`,
-          content: f.content,
-          language: 'sql',
-          size: f.content.length,
-          isChanged: false
-        })) || []
+          // 处理SQL代码
+          const sqlFiles =
+            preview.data.sql?.map((f: GeneratedCodeFile) => ({
+              path: `sql/${f.fileName}`,
+              content: f.content,
+              language: 'sql',
+              size: f.content.length,
+              isChanged: false
+            })) || []
 
-        result.files = [...frontendFiles, ...backendFiles, ...sqlFiles]
-        result.stats = {
-          totalFiles: result.files.length,
-          totalCodeLines: result.files.reduce((acc, file) => acc + file.content.split('\n').length, 0),
-          frontendFiles: frontendFiles.length,
-          backendFiles: backendFiles.length
+          result.files = [...frontendFiles, ...backendFiles, ...sqlFiles]
+          result.stats = {
+            totalFiles: result.files.length,
+            totalCodeLines: result.files.reduce(
+              (acc, file) => acc + file.content.split('\n').length,
+              0
+            ),
+            frontendFiles: frontendFiles.length,
+            backendFiles: backendFiles.length
+          }
         }
-      }
 
-      previewResult.value = result
-      isCompleted.value = true
-      return result
-    } catch (error) {
+        previewResult.value = result
+        isCompleted.value = true
+        return result
+      } catch (error: any) {
+        console.error('创建配置失败:', error.response?.data || error.message || error)
+        ElMessage.error(
+          `生成代码失败: ${error.response?.data?.message || error.message || '未知错误'}`
+        )
+        throw error
+      }
+    } catch (error: any) {
       console.error('生成代码失败:', error)
       ElMessage.error('生成代码失败')
       return null
@@ -409,18 +556,18 @@ export const useWizardStore = defineStore('wizard', () => {
   const getLanguageFromPath = (path: string): string => {
     const ext = path.split('.').pop()?.toLowerCase() || ''
     const langMap: Record<string, string> = {
-      'ts': 'typescript',
-      'js': 'javascript',
-      'vue': 'vue',
-      'java': 'java',
-      'xml': 'xml',
-      'json': 'json',
-      'sql': 'sql',
-      'md': 'markdown',
-      'css': 'css',
-      'scss': 'scss',
-      'less': 'less',
-      'html': 'html'
+      ts: 'typescript',
+      js: 'javascript',
+      vue: 'vue',
+      java: 'java',
+      xml: 'xml',
+      json: 'json',
+      sql: 'sql',
+      md: 'markdown',
+      css: 'css',
+      scss: 'scss',
+      less: 'less',
+      html: 'html'
     }
 
     return langMap[ext] || 'plaintext'

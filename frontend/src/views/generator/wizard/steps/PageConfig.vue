@@ -17,9 +17,9 @@
 
       <el-form-item label="列表样式">
         <el-radio-group v-model="formData.listStyle">
-          <el-radio label="表格布局" value="table">表格布局</el-radio>
-          <el-radio label="卡片布局" value="card">卡片布局</el-radio>
-          <el-radio label="列表布局" value="list">列表布局</el-radio>
+          <el-radio label="table">表格布局</el-radio>
+          <el-radio label="card">卡片布局</el-radio>
+          <el-radio label="list">列表布局</el-radio>
         </el-radio-group>
       </el-form-item>
 
@@ -42,6 +42,54 @@
         </el-select>
       </el-form-item>
 
+      <!-- 操作按钮配置 -->
+      <el-divider content-position="left">操作按钮配置</el-divider>
+
+      <el-form-item label="显示操作栏">
+        <el-switch v-model="formData.showOperation" />
+      </el-form-item>
+
+      <el-form-item label="操作栏宽度" v-if="formData.showOperation">
+        <el-input v-model="formData.operationWidth" placeholder="如: 180px" />
+      </el-form-item>
+
+      <el-form-item label="表格操作按钮" v-if="formData.showOperation">
+        <div class="button-config">
+          <p class="config-tip">选择需要的按钮并拖动排序</p>
+
+          <draggable v-model="formData.operations" item-key="value" handle=".drag-handle" :animation="150"
+            class="button-list">
+            <template #item="{ element }">
+              <div class="button-item">
+                <el-icon class="drag-handle"><d-arrow-left /></el-icon>
+                <el-checkbox :model-value="isOperationSelected(element)" @update:model-value="toggleOperation(element)">
+                  {{ getOperationLabel(element) }}
+                </el-checkbox>
+              </div>
+            </template>
+          </draggable>
+        </div>
+      </el-form-item>
+
+      <el-form-item label="顶部工具栏按钮">
+        <div class="button-config">
+          <p class="config-tip">选择需要的按钮并拖动排序</p>
+
+          <draggable v-model="formData.toolbarButtons" item-key="value" handle=".drag-handle" :animation="150"
+            class="button-list">
+            <template #item="{ element }">
+              <div class="button-item">
+                <el-icon class="drag-handle"><d-arrow-left /></el-icon>
+                <el-checkbox :model-value="isToolbarButtonSelected(element)"
+                  @update:model-value="toggleToolbarButton(element)">
+                  {{ getToolbarButtonLabel(element) }}
+                </el-checkbox>
+              </div>
+            </template>
+          </draggable>
+        </div>
+      </el-form-item>
+
       <!-- 表单配置 -->
       <el-divider content-position="left">表单配置</el-divider>
 
@@ -55,9 +103,9 @@
 
       <el-form-item label="标签位置">
         <el-radio-group v-model="formData.labelPosition">
-          <el-radio label="右对齐" value="right">右对齐</el-radio>
-          <el-radio label="左对齐" value="left">左对齐</el-radio>
-          <el-radio label="顶部对齐" value="top">顶部对齐</el-radio>
+          <el-radio label="right">右对齐</el-radio>
+          <el-radio label="left">左对齐</el-radio>
+          <el-radio label="top">顶部对齐</el-radio>
         </el-radio-group>
       </el-form-item>
 
@@ -110,10 +158,12 @@
 
 <script lang="ts" setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
-import { ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElDivider, ElRadioGroup, ElRadio, ElSwitch, ElInputNumber } from 'element-plus'
+import { ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElDivider, ElRadioGroup, ElRadio, ElSwitch, ElInputNumber, ElCheckboxGroup, ElCheckbox, ElIcon } from 'element-plus'
+import { DArrowLeft } from '@element-plus/icons-vue'
 import type { FormInstance } from 'element-plus'
 import { useWizardState } from '../hooks/useWizardState'
 import { useFieldConfig } from '../hooks/useFieldConfig'
+import draggable from 'vuedraggable'
 
 // 获取向导状态
 const { wizardData, updateStepData } = useWizardState()
@@ -124,6 +174,40 @@ const { fields } = useFieldConfig()
 // 表单引用
 const formRef = ref<FormInstance>()
 
+// 操作按钮映射
+const operationLabels = {
+  view: '查看',
+  edit: '编辑',
+  delete: '删除',
+  copy: '复制',
+  status: '状态切换'
+}
+
+// 工具栏按钮映射
+const toolbarButtonLabels = {
+  add: '新增',
+  batchDelete: '批量删除',
+  import: '导入',
+  export: '导出',
+  refresh: '刷新'
+}
+
+// 获取操作按钮标签
+const getOperationLabel = (key: string) => {
+  return operationLabels[key as keyof typeof operationLabels] || key
+}
+
+// 获取工具栏按钮标签
+const getToolbarButtonLabel = (key: string) => {
+  return toolbarButtonLabels[key as keyof typeof toolbarButtonLabels] || key
+}
+
+// 默认的操作按钮列表
+const defaultOperations = ['view', 'edit', 'delete', 'copy', 'status']
+
+// 默认的工具栏按钮列表
+const defaultToolbarButtons = ['add', 'batchDelete', 'import', 'export', 'refresh']
+
 // 表单数据
 const formData = reactive({
   // 列表配置
@@ -133,6 +217,14 @@ const formData = reactive({
   showPagination: true,
   pageSize: 10,
   listColumns: [] as string[],
+
+  // 操作按钮配置
+  showOperation: true,
+  operationWidth: '180px',
+  operations: [...defaultOperations],
+  selectedOperations: ['view', 'edit', 'delete'] as string[],
+  toolbarButtons: [...defaultToolbarButtons],
+  selectedToolbarButtons: ['add', 'refresh', 'export'] as string[],
 
   // 表单配置
   formWidth: '600px',
@@ -152,18 +244,109 @@ const formData = reactive({
   importPermission: ''
 })
 
+// 检查操作按钮是否被选中
+const isOperationSelected = (operation: string) => {
+  return formData.selectedOperations.includes(operation)
+}
+
+// 切换操作按钮选中状态
+const toggleOperation = (operation: string) => {
+  const index = formData.selectedOperations.indexOf(operation)
+  if (index === -1) {
+    formData.selectedOperations.push(operation)
+  } else {
+    formData.selectedOperations.splice(index, 1)
+  }
+}
+
+// 检查工具栏按钮是否被选中
+const isToolbarButtonSelected = (button: string) => {
+  return formData.selectedToolbarButtons.includes(button)
+}
+
+// 切换工具栏按钮选中状态
+const toggleToolbarButton = (button: string) => {
+  const index = formData.selectedToolbarButtons.indexOf(button)
+  if (index === -1) {
+    formData.selectedToolbarButtons.push(button)
+  } else {
+    formData.selectedToolbarButtons.splice(index, 1)
+  }
+}
+
 // 初始化
 onMounted(() => {
   // 从向导数据中恢复表单数据
   if (wizardData.pageConfig) {
+    // 恢复基本字段
     formData.listStyle = wizardData.pageConfig.listStyle || 'table'
-    formData.listColumns = [...wizardData.pageConfig.listColumns]
-    formData.searchColumns = [...wizardData.pageConfig.searchColumns]
-    formData.formColumns = [...wizardData.pageConfig.formColumns]
+    formData.listTitle = wizardData.pageConfig.listTitle || ''
+    formData.listColumns = [...(wizardData.pageConfig.listColumns || [])]
+    formData.searchColumns = [...(wizardData.pageConfig.searchColumns || [])]
+    formData.formColumns = [...(wizardData.pageConfig.formColumns || [])]
+
+    // 恢复布局设置
+    if (wizardData.pageConfig.showCheckbox !== undefined) {
+      formData.showCheckbox = wizardData.pageConfig.showCheckbox
+    }
+    if (wizardData.pageConfig.showPagination !== undefined) {
+      formData.showPagination = wizardData.pageConfig.showPagination
+    }
+    if (wizardData.pageConfig.pageSize !== undefined) {
+      formData.pageSize = wizardData.pageConfig.pageSize
+    }
+
+    // 恢复表单设置
+    if (wizardData.pageConfig.formWidth) {
+      formData.formWidth = wizardData.pageConfig.formWidth
+    }
+    if (wizardData.pageConfig.labelWidth) {
+      formData.labelWidth = wizardData.pageConfig.labelWidth
+    }
+    if (wizardData.pageConfig.labelPosition) {
+      formData.labelPosition = wizardData.pageConfig.labelPosition
+    }
+
+    // 恢复操作按钮配置
+    if (wizardData.pageConfig.showOperation !== undefined) {
+      formData.showOperation = wizardData.pageConfig.showOperation
+    }
+    if (wizardData.pageConfig.operationWidth) {
+      formData.operationWidth = wizardData.pageConfig.operationWidth
+    }
+    if (wizardData.pageConfig.selectedOperations && Array.isArray(wizardData.pageConfig.selectedOperations)) {
+      formData.selectedOperations = [...wizardData.pageConfig.selectedOperations]
+    }
+    if (wizardData.pageConfig.selectedToolbarButtons && Array.isArray(wizardData.pageConfig.selectedToolbarButtons)) {
+      formData.selectedToolbarButtons = [...wizardData.pageConfig.selectedToolbarButtons]
+    }
+
+    // 恢复操作按钮和工具栏按钮顺序
+    if (wizardData.pageConfig.operations && Array.isArray(wizardData.pageConfig.operations)) {
+      formData.operations = [...wizardData.pageConfig.operations]
+    } else {
+      // 如果没有保存操作按钮顺序，但有选中的按钮，则创建一个新的顺序
+      if (wizardData.pageConfig.selectedOperations && Array.isArray(wizardData.pageConfig.selectedOperations)) {
+        const selectedOps = [...wizardData.pageConfig.selectedOperations]
+        const unselectedOps = defaultOperations.filter(op => !selectedOps.includes(op))
+        formData.operations = [...selectedOps, ...unselectedOps]
+      }
+    }
+
+    if (wizardData.pageConfig.toolbarButtons && Array.isArray(wizardData.pageConfig.toolbarButtons)) {
+      formData.toolbarButtons = [...wizardData.pageConfig.toolbarButtons]
+    } else {
+      // 如果没有保存工具栏按钮顺序，但有选中的按钮，则创建一个新的顺序
+      if (wizardData.pageConfig.selectedToolbarButtons && Array.isArray(wizardData.pageConfig.selectedToolbarButtons)) {
+        const selectedButtons = [...wizardData.pageConfig.selectedToolbarButtons]
+        const unselectedButtons = defaultToolbarButtons.filter(btn => !selectedButtons.includes(btn))
+        formData.toolbarButtons = [...selectedButtons, ...unselectedButtons]
+      }
+    }
   }
 
   // 设置默认权限前缀
-  const moduleName = wizardData.basicInfo.moduleName
+  const moduleName = wizardData.basicInfo?.moduleName
   if (moduleName && !formData.listPermission) {
     const permissionPrefix = `system:${moduleName}:`
     formData.listPermission = `${permissionPrefix}list`
@@ -177,14 +360,30 @@ onMounted(() => {
 
 // 保存表单数据
 const saveFormData = async () => {
-  await formRef.value?.validate((valid) => {
-    if (valid) {
+  let valid = true
+
+  await formRef.value?.validate((isValid) => {
+    valid = isValid
+    if (isValid) {
       // 更新向导状态
       updateStepData('pageConfig', {
         listStyle: formData.listStyle,
+        showCheckbox: formData.showCheckbox,
+        showPagination: formData.showPagination,
+        pageSize: formData.pageSize,
+        listTitle: formData.listTitle,
         listColumns: formData.listColumns,
         searchColumns: formData.searchColumns,
-        formColumns: formData.formColumns
+        formColumns: formData.formColumns,
+        showOperation: formData.showOperation,
+        operationWidth: formData.operationWidth,
+        operations: formData.operations,
+        selectedOperations: formData.selectedOperations,
+        toolbarButtons: formData.toolbarButtons,
+        selectedToolbarButtons: formData.selectedToolbarButtons,
+        formWidth: formData.formWidth,
+        labelWidth: formData.labelWidth,
+        labelPosition: formData.labelPosition
       })
 
       // 更新权限配置
@@ -198,6 +397,8 @@ const saveFormData = async () => {
       })
     }
   })
+
+  return valid
 }
 
 // 暴露方法给父组件
@@ -235,6 +436,44 @@ defineExpose({
 
   .mr-3 {
     margin-right: 12px;
+  }
+
+  .button-config {
+    width: 100%;
+
+    .config-tip {
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+      margin-bottom: 8px;
+    }
+
+    .button-list {
+      border: 1px solid var(--el-border-color);
+      border-radius: 4px;
+      padding: 8px;
+      background-color: var(--el-fill-color-light);
+      min-height: 100px;
+    }
+
+    .button-item {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      margin-bottom: 4px;
+      background-color: white;
+      border-radius: 4px;
+      border: 1px solid var(--el-border-color-lighter);
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .drag-handle {
+        cursor: move;
+        margin-right: 8px;
+        color: var(--el-text-color-secondary);
+      }
+    }
   }
 }
 </style>

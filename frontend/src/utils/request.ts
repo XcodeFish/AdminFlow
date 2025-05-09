@@ -118,11 +118,19 @@ class HttpClient {
           config.headers.set('Authorization', `Bearer ${token}`)
         }
 
+        // 添加详细日志
+        console.log(`🚀 Request [${config.method?.toUpperCase()}] ${config.url}`, {
+          headers: config.headers,
+          params: config.params,
+          data: config.data
+        })
+
         return config
       },
       (error) => {
         // 触发请求错误事件
         eventBus.emit(RequestEvent.ERROR, error)
+        console.error('⚠️ Request Error:', error)
         return Promise.reject(error)
       }
     )
@@ -133,10 +141,15 @@ class HttpClient {
         // 触发请求结束事件
         eventBus.emit(RequestEvent.END, response)
 
+        // 添加详细日志
+        console.log(`✅ Response [${response.status}] ${response.config.url}`, response.data)
+
         const { data } = response
 
         // 处理业务状态码
         if (data.code !== undefined && ![0, 200, 201].includes(data.code)) {
+          console.error(`🚨 API Error [${data.code}]:`, data.message)
+
           // 根据错误码触发对应事件
           if (data.code === 401) {
             eventBus.emit(RequestEvent.UNAUTHORIZED, data)
@@ -160,6 +173,14 @@ class HttpClient {
       (error) => {
         // 触发请求错误事件
         eventBus.emit(RequestEvent.ERROR, error)
+
+        // 添加详细日志
+        console.error('❌ Response Error:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          url: error.config?.url,
+          message: error.message
+        })
 
         // 处理HTTP状态码
         if (error.response) {

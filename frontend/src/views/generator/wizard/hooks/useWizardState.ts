@@ -1,6 +1,7 @@
 import { useWizardStore } from '@/store/modules/wizard'
 import { computed, ComputedRef, Ref } from 'vue'
 import { WizardStep, ValidationError, WizardData } from '@/types/generator'
+import { ref, reactive } from 'vue'
 
 /**
  * 向导状态管理Hook，用于管理代码生成向导的状态和导航
@@ -22,6 +23,12 @@ export function useWizardState() {
   const isLoading: ComputedRef<boolean> = computed(() => wizardStore.isLoading)
 
   const isCompleted: ComputedRef<boolean> = computed(() => wizardStore.isCompleted)
+
+  // 使用Vue的响应式API
+  const wizardDataRef = ref<WizardData>(wizardData)
+
+  // 当前步骤
+  const currentStepRef = ref(currentStep.value)
 
   /**
    * 初始化向导状态
@@ -95,6 +102,25 @@ export function useWizardState() {
     return wizardStore.fetchTableDetail(datasourceId, tableName)
   }
 
+  /**
+   * 更新步骤数据
+   * @param step 步骤名称
+   * @param data 步骤数据
+   */
+  const updateStepDataRef = (step: keyof WizardData, data: any) => {
+    wizardDataRef[step] = data
+  }
+
+  /**
+   * 重置向导数据
+   */
+  const resetWizardData = () => {
+    Object.keys(wizardDataRef).forEach((key) => {
+      delete wizardDataRef[key as keyof WizardData]
+    })
+    currentStepRef.value = 0
+  }
+
   return {
     // 状态
     steps,
@@ -114,7 +140,9 @@ export function useWizardState() {
     validateCurrentStep,
     completeWizard,
     resetWizard,
-    fetchTableDetail
+    fetchTableDetail,
+    updateStepDataRef,
+    resetWizardData
   }
 }
 

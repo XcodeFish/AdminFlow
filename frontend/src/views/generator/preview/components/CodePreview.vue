@@ -23,9 +23,14 @@
       <el-empty description="请选择一个文件查看" />
     </div>
 
-    <div v-else class="editor-container">
-      <!-- 使用Monaco编辑器渲染代码 -->
-      <div ref="editorContainer" class="monaco-editor"></div>
+    <div v-else class="code-container">
+      <div v-if="loading" class="loading-placeholder">
+        <el-skeleton animated :rows="20" />
+      </div>
+      <template v-else-if="editorContent">
+        <highlight-code :language="getLanguageFromFile(currentFile)" :code="editorContent" />
+      </template>
+      <el-empty v-else description="选择一个文件以查看内容" />
     </div>
   </div>
 </template>
@@ -34,6 +39,7 @@
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import * as monaco from 'monaco-editor'
 import type { PreviewFile } from '@/types/generator'
+import HighlightCode from '@/components/HighlightCode/index.vue'
 
 // 编辑器实例
 let editor: monaco.editor.IStandaloneCodeEditor | null = null
@@ -135,6 +141,29 @@ onBeforeUnmount(() => {
     editor = null
   }
 })
+
+// 添加获取语言的方法
+const getLanguageFromFile = (file: any) => {
+  if (!file) return 'plaintext'
+
+  const extension = file.path.split('.').pop()?.toLowerCase() || ''
+  const languageMap: Record<string, string> = {
+    'vue': 'html',
+    'ts': 'typescript',
+    'js': 'javascript',
+    'java': 'java',
+    'xml': 'xml',
+    'json': 'json',
+    'sql': 'sql',
+    'md': 'markdown',
+    'css': 'css',
+    'scss': 'scss',
+    'less': 'less',
+    'html': 'html'
+  }
+
+  return languageMap[extension] || 'plaintext'
+}
 </script>
 
 <style scoped>
@@ -203,5 +232,19 @@ onBeforeUnmount(() => {
 .monaco-editor {
   width: 100%;
   height: 100%;
+}
+
+.code-container {
+  flex: 1;
+  overflow: hidden;
+}
+
+.loading-placeholder {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--el-bg-color-page);
+  padding: 20px;
 }
 </style>

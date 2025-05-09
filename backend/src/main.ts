@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe, Logger, BadRequestException } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
@@ -66,6 +66,22 @@ async function bootstrap() {
       transform: true, // 自动转换类型
       transformOptions: {
         enableImplicitConversion: false, // 禁用隐式类型转换
+      },
+      // 添加详细错误消息选项
+      disableErrorMessages: false,
+      validationError: { target: false, value: true },
+      stopAtFirstError: false,
+      exceptionFactory: (errors) => {
+        const messages = errors.map((error) => {
+          return {
+            property: error.property,
+            value: error.value,
+            constraints: error.constraints,
+            children: error.children,
+          };
+        });
+        console.log('Validation errors:', JSON.stringify(messages, null, 2));
+        return new BadRequestException(messages);
       },
     }),
   );

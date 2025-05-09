@@ -617,6 +617,19 @@ export interface WizardData {
     listColumns: string[]
     searchColumns: string[]
     formColumns: string[]
+    showCheckbox?: boolean
+    showPagination?: boolean
+    pageSize?: number
+    listTitle?: string
+    showOperation?: boolean
+    operationWidth?: string
+    operations?: string[]
+    selectedOperations?: string[]
+    toolbarButtons?: string[]
+    selectedToolbarButtons?: string[]
+    formWidth?: string
+    labelWidth?: string
+    labelPosition?: string
   }
   advancedConfig: {
     enableImport: boolean
@@ -715,13 +728,15 @@ export interface DatasourceTestDto {
 
 export interface ConfigCreateDto {
   moduleName: string
+  tableName: string
   description?: string
-  tableId: number
   datasourceId: number
-  templateId: string
+  apiPrefix: string
+  packageName: string
+  templateType: string
   fields: any
   pageConfig: any
-  options?: any
+  author?: string
 }
 
 export interface ConfigUpdateDto {

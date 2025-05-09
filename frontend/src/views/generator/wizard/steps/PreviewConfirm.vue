@@ -107,16 +107,73 @@
         </template>
       </el-result>
     </div>
+
+    <!-- 代码片段预览 -->
+    <div class="code-snippets-preview" v-if="previewResult">
+      <h4>代码片段预览</h4>
+
+      <el-tabs v-model="activeTab" type="border-card">
+        <el-tab-pane label="前端代码" name="frontend">
+          <div class="snippet-selector">
+            <el-select v-model="selectedFrontendFile" placeholder="选择文件" @change="onFileSelected">
+              <el-option v-for="file in frontendFiles" :key="file.path" :label="getFileName(file.path)"
+                :value="file.path" />
+            </el-select>
+          </div>
+
+          <div class="code-snippet" v-if="currentSnippet">
+            <div class="file-path">{{ currentSnippet.path }}</div>
+            <el-divider></el-divider>
+            <highlight-code :language="getLanguage(currentSnippet.path)"
+              :code="currentSnippet.content.slice(0, 500) + (currentSnippet.content.length > 500 ? '...' : '')" />
+          </div>
+        </el-tab-pane>
+
+        <el-tab-pane label="后端代码" name="backend">
+          <div class="snippet-selector">
+            <el-select v-model="selectedBackendFile" placeholder="选择文件" @change="onFileSelected">
+              <el-option v-for="file in backendFiles" :key="file.path" :label="getFileName(file.path)"
+                :value="file.path" />
+            </el-select>
+          </div>
+
+          <div class="code-snippet" v-if="currentSnippet">
+            <div class="file-path">{{ currentSnippet.path }}</div>
+            <el-divider></el-divider>
+            <highlight-code :language="getLanguage(currentSnippet.path)"
+              :code="currentSnippet.content.slice(0, 500) + (currentSnippet.content.length > 500 ? '...' : '')" />
+          </div>
+        </el-tab-pane>
+
+        <el-tab-pane label="SQL代码" name="sql">
+          <div class="snippet-selector">
+            <el-select v-model="selectedSqlFile" placeholder="选择文件" @change="onFileSelected">
+              <el-option v-for="file in sqlFiles" :key="file.path" :label="getFileName(file.path)" :value="file.path" />
+            </el-select>
+          </div>
+
+          <div class="code-snippet" v-if="currentSnippet">
+            <div class="file-path">{{ currentSnippet.path }}</div>
+            <el-divider></el-divider>
+            <highlight-code language="sql"
+              :code="currentSnippet.content.slice(0, 500) + (currentSnippet.content.length > 500 ? '...' : '')" />
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
-import { ElDescriptions, ElDescriptionsItem, ElTag, ElButton, ElAlert, ElResult, ElCard } from 'element-plus'
+import { computed, ref, watch } from 'vue'
+import { ElDescriptions, ElDescriptionsItem, ElTag, ElButton, ElAlert, ElResult, ElCard, ElTabs, ElTabPane, ElSelect, ElOption, ElDivider } from 'element-plus'
 import { useWizardStore } from '@/store/modules/wizard'
 import { useWizardState } from '../hooks/useWizardState'
 import { usePreview } from '../hooks/usePreview'
 import { useFieldConfig } from '../hooks/useFieldConfig'
+
+// 导入代码高亮组件
+import HighlightCode from '@/components/HighlightCode/index.vue'
 
 // 获取向导状态
 const wizardStore = useWizardStore()
@@ -127,7 +184,14 @@ const tableDetail = computed(() => wizardStore.tableDetail)
 const { fields } = useFieldConfig()
 
 // 获取预览相关功能
-const { previewResult, statistics, getFullPreviewResult } = usePreview()
+const { previewResult, statistics, getFullPreviewResult, frontendFiles, backendFiles, sqlFiles } = usePreview()
+
+// 代码片段预览状态
+const activeTab = ref('frontend')
+const selectedFrontendFile = ref('')
+const selectedBackendFile = ref('')
+const selectedSqlFile = ref('')
+const currentSnippet = ref<any>(null)
 
 // 获取高级配置选项
 const getAdvancedOption = (key: string) => {
@@ -151,10 +215,98 @@ const getTemplateTypeLabel = (templateType: string | null) => {
 const generatePreview = async () => {
   try {
     await getFullPreviewResult()
+    // 预览生成后自动选择第一个文件
+    if (frontendFiles.value.length > 0) {
+      selectedFrontendFile.value = frontendFiles.value[0].path
+      onFileSelected()
+    }
   } catch (error) {
     console.error('生成预览失败:', error)
   }
 }
+
+// 获取文件名
+const getFileName = (path: string) => {
+  return path.split('/').pop() || path
+}
+
+// 获取代码语言
+const getLanguage = (path: string) => {
+  const ext = path.split('.').pop()?.toLowerCase() || ''
+  const languageMap: Record<string, string> = {
+    'vue': 'html',
+    'ts': 'typescript',
+    'js': 'javascript',
+    'java': 'java',
+    'xml': 'xml',
+    'json': 'json',
+    'sql': 'sql',
+    'md': 'markdown',
+    'css': 'css',
+    'scss': 'scss',
+    'less': 'less',
+    'html': 'html'
+  }
+  return languageMap[ext] || 'plaintext'
+}
+
+// 文件选择事件
+const onFileSelected = () => {
+  let selectedPath = ''
+
+  switch (activeTab.value) {
+    case 'frontend':
+      selectedPath = selectedFrontendFile.value
+      break
+    case 'backend':
+      selectedPath = selectedBackendFile.value
+      break
+    case 'sql':
+      selectedPath = selectedSqlFile.value
+      break
+  }
+
+  if (!selectedPath) return
+
+  // 查找选中的文件
+  let selectedFile
+
+  if (activeTab.value === 'frontend') {
+    selectedFile = frontendFiles.value.find(f => f.path === selectedPath)
+  } else if (activeTab.value === 'backend') {
+    selectedFile = backendFiles.value.find(f => f.path === selectedPath)
+  } else {
+    selectedFile = sqlFiles.value.find(f => f.path === selectedPath)
+  }
+
+  if (selectedFile) {
+    currentSnippet.value = selectedFile
+  }
+}
+
+// 监听标签页变化
+watch(activeTab, (newTab) => {
+  switch (newTab) {
+    case 'frontend':
+      if (frontendFiles.value.length > 0 && !selectedFrontendFile.value) {
+        selectedFrontendFile.value = frontendFiles.value[0].path
+        onFileSelected()
+      }
+      break
+    case 'backend':
+      if (backendFiles.value.length > 0 && !selectedBackendFile.value) {
+        selectedBackendFile.value = backendFiles.value[0].path
+        onFileSelected()
+      }
+      break
+    case 'sql':
+      if (sqlFiles.value.length > 0 && !selectedSqlFile.value) {
+        selectedSqlFile.value = sqlFiles.value[0].path
+        onFileSelected()
+      }
+      break
+  }
+})
 
 // 保存表单数据
 const saveFormData = async () => {
@@ -198,35 +350,62 @@ defineExpose({
   }
 
   .generation-stats {
-    margin-top: 24px;
+    margin-bottom: 24px;
 
     .stats-cards {
       display: flex;
-      justify-content: center;
       gap: 16px;
-      flex-wrap: wrap;
+      margin-top: 16px;
 
       .stats-card {
-        width: 150px;
+        flex: 1;
+        min-width: 100px;
 
         .card-header {
           display: flex;
-          justify-content: space-between;
-          align-items: center;
+          justify-content: center;
+          font-size: 14px;
         }
 
         .card-content {
-          font-size: 24px;
-          text-align: center;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 60px;
+          font-size: 28px;
           font-weight: bold;
-          padding: 16px 0;
+          color: var(--el-color-primary);
         }
       }
     }
   }
 
-  .mr-1 {
-    margin-right: 4px;
+  .code-snippets-preview {
+    margin-top: 32px;
+
+    h4 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 16px;
+    }
+
+    .snippet-selector {
+      margin-bottom: 16px;
+    }
+
+    .code-snippet {
+      margin-bottom: 16px;
+
+      .file-path {
+        font-family: monospace;
+        font-size: 14px;
+        color: var(--el-text-color-secondary);
+      }
+    }
   }
+}
+
+.mr-1 {
+  margin-right: 8px;
 }
 </style>

@@ -74,9 +74,13 @@ export default {
   // 部署管理
   deploy: {
     deploy: (data: DeployRequestDto) => request.post('/v1/generator/generate/deploy', data),
-    status: (deploymentId: number) => request.get(`/v1/generator/generate/deploy/${deploymentId}/status`),
-    logs: (deploymentId: number) => request.get(`/v1/generator/generate/deploy/${deploymentId}/logs`),
-    cancel: (deploymentId: number) => request.post(`/v1/generator/generate/deploy/${deploymentId}/cancel`),
-    retry: (deploymentId: number) => request.post(`/v1/generator/generate/deploy/${deploymentId}/retry`)
+    status: (deploymentId: number) =>
+      request.get(`/v1/generator/generate/deploy/${deploymentId}/status`),
+    logs: (deploymentId: number) =>
+      request.get(`/v1/generator/generate/deploy/${deploymentId}/logs`),
+    cancel: (deploymentId: number) =>
+      request.post(`/v1/generator/generate/deploy/${deploymentId}/cancel`),
+    retry: (deploymentId: number) =>
+      request.post(`/v1/generator/generate/deploy/${deploymentId}/retry`)
   }
 }
